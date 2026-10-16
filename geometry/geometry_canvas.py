@@ -666,7 +666,7 @@ class GeometryCanvas(tk.Canvas):
                 anchor=anchor,
                 fill=fill,
                 font=font,
-                tags=("wall_label_group",),
+                tags=("wall_label_group", f"{wall} wall"),
             )
 
 
@@ -1278,7 +1278,7 @@ class GeometryCanvas(tk.Canvas):
                 anchor=anchor,
                 fill=fill,
                 font=font,
-                tags=("floor_ceiling_label",),
+                tags=("floor_ceiling_label", label),
             )
 
 

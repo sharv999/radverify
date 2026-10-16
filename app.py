@@ -10,7 +10,7 @@ from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, M
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.1 field prototype"
+APP_VERSION = "0.2 Step 1 field prototype"
 PROJECT_EXTENSION = ".radverify.json"
 
 
@@ -102,6 +102,7 @@ class RadVerifyApp(tk.Tk):
         self._loading = True
         try:
             self.room_tab.load()
+            self.floor_tab.reset_selection()
             self.floor_tab.refresh_openings()
             self.barrier_tab.refresh()
             self.measurement_tab.refresh()
