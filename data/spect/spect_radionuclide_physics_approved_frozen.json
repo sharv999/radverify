@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "schema_version": 1,
+    "dataset_id": "spect-radionuclide-physics-tc99m-source-model",
+    "revision": "2026-08-23-step20-1",
+    "description": "Tc-99m SPECT point-source physics constants reviewed and frozen for the non-production SPECT calculation stack. Dataset approval does not enable production SPECT.",
+    "approval_status": "physics_approved_frozen_nonproduction",
+    "approval_basis": "SPECT Step 20 source verification and project physics freeze; non-production use only.",
+    "records_sha256": "2346bc89c2edc201dec6a849adc7149ca74ed82ce9823be962bb994bfe9ed172",
+    "approved_records_sha256": "2346bc89c2edc201dec6a849adc7149ca74ed82ce9823be962bb994bfe9ed172"
+  },
+  "records": [
+    {
+      "code": "Tc99m",
+      "display_name": "Tc-99m",
+      "half_life_h": 6.0067,
+      "dose_rate_constant_uSv_h_per_MBq_at_1m": 0.0206,
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "half_life_provenance": "Tc-99m half-life 6.0067 h; evaluated decay-data value consistent with NNDC-derived radionuclide tables and BIPM/ANSTO Tc-99m standardisation data.",
+      "dose_rate_provenance": "Oumano et al., J Appl Clin Med Phys. 2025;26:e70084, DOI 10.1002/acm2.70084, Table 4 (citing Smith & Stabin 2012): Tc-99m gamma constant 0.795 R/mCi-h at 1 cm and f-factor 0.959 cGy/R. Derived at 1 m per MBq: 0.795*0.959 cGy/(mCi h) / 10000 * 10000 uGy/cGy / 37 MBq/mCi = 0.0206055 uGy/(MBq h), rounded to 0.0206 uSv/(MBq h) for photons (wR=1). This is an unattenuated point-source constant; no patient self-attenuation factor is embedded."
+    }
+  ]
+}

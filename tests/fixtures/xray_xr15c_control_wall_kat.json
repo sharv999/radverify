@@ -1,0 +1,14 @@
+{
+  "case_id": "XR15C-CW-001",
+  "description": "125 examinations/week; source 2.0 m normal to a finite vertical control wall; Pb; T=1; P=100 uSv/week.",
+  "barrier_role": "fig52_control_wall",
+  "distance_m": 2.0,
+  "unshielded_weekly_dose_uSv": 1062.5,
+  "required_thickness_mm": 0.23,
+  "actual_thickness_mm": 0.88,
+  "transmitted_dose_uSv_per_week": 7.017,
+  "compliance_status": "PASS",
+  "fig52_section": "5.3.6",
+  "fig52_combination": "governing_max",
+  "issued_output_enabled": true
+}

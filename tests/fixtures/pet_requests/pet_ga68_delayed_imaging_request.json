@@ -1,0 +1,43 @@
+{
+  "schema": "radshield_pet_calculation_request_v2",
+  "schema_version": 2,
+  "production_eligible": false,
+  "source": {
+    "radionuclide": "Ga68",
+    "injected_activity_mbq": 150.0,
+    "patients_per_week": 12.0,
+    "residual_activity_factor": 0.85,
+    "exposure_phases": [
+      {
+        "name": "Post-injection uptake",
+        "start_time_h": 0.25,
+        "duration_h": 0.75,
+        "activity_retention_factor": 1.0
+      },
+      {
+        "name": "Delayed imaging",
+        "start_time_h": 1.0,
+        "duration_h": 0.4,
+        "activity_retention_factor": 1.0
+      }
+    ]
+  },
+  "barrier_requests": [
+    {
+      "material_key": "concrete_2350kg_m3",
+      "distance_m": 2.5,
+      "occupancy_factor": 0.5,
+      "design_goal_uSv_per_week": 10.0,
+      "provided_thickness_mm": 250.0,
+      "source_name": "Ga-68 patient adjacent area"
+    },
+    {
+      "material_key": "iron",
+      "distance_m": 4.0,
+      "occupancy_factor": 0.125,
+      "design_goal_uSv_per_week": 10.0,
+      "provided_thickness_mm": 100.0,
+      "source_name": "Ga-68 patient remote area"
+    }
+  ]
+}

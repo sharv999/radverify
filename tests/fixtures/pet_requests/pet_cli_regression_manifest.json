@@ -1,0 +1,29 @@
+{
+  "schema": "radshield_pet_cli_regression_manifest_v1",
+  "schema_version": 1,
+  "production_eligible": false,
+  "fixtures": [
+    {
+      "fixture_id": "pet-f18-uptake-imaging-v1",
+      "request_path": "tests/fixtures/pet_requests/pet_f18_uptake_imaging_request.json",
+      "expected_radionuclide": "F18",
+      "expected_materials": [
+        "lead",
+        "concrete_2350kg_m3"
+      ],
+      "expected_output_sha256": "6c51f7c8bde6a7a8e9743fb80e7bc072cdbe26fc34f9b0505a06bafeb1a94469",
+      "expected_replay_verified": true
+    },
+    {
+      "fixture_id": "pet-ga68-delayed-imaging-v1",
+      "request_path": "tests/fixtures/pet_requests/pet_ga68_delayed_imaging_request.json",
+      "expected_radionuclide": "Ga68",
+      "expected_materials": [
+        "concrete_2350kg_m3",
+        "iron"
+      ],
+      "expected_output_sha256": "b7bf031cb2f6252635955dffaeda5d0c3a27dd1b46fb29eeac9ffbe03069082a",
+      "expected_replay_verified": true
+    }
+  ]
+}

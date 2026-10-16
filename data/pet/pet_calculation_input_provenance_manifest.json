@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "manifest_id": "pet-calculation-input-provenance",
+  "revision": "2026-08-17-v2",
+  "description": "Frozen compatibility manifest for the single-source PET calculation input boundary with per-phase activity retention.",
+  "radionuclide_dataset": {
+    "dataset_id": "pet-radionuclide-physics-source-model",
+    "revision": "2026-07-21-review-1",
+    "records_sha256": "1d7e62d9938aa68868f384f36e1923edb67aa4a2d4943293f862e473103b8971"
+  },
+  "attenuation_dataset": {
+    "dataset_id": "pet-511kev-aapm-tg108-review-fixture",
+    "revision": "2026-07-19-review-1",
+    "records_sha256": "a24a2dd344d0ae35c5e7ebb880afef18681572f884f8f3ca043610c7545caeb5"
+  },
+  "physics_contract_version": 2,
+  "solver_contract_version": 1
+}

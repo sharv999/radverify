@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "dataset_id": "spect-radionuclide-physics-development",
+    "revision": "2026-08-18-step-1",
+    "description": "Non-production SPECT Step 1 radionuclide physics data. Tc-99m only.",
+    "approval_status": "development_nonproduction"
+  },
+  "records": [
+    {
+      "code": "Tc99m",
+      "display_name": "Tc-99m",
+      "half_life_h": 6.0067,
+      "dose_rate_constant_uSv_h_per_MBq_at_1m": 0.0206,
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "half_life_provenance": "NNDC ENSDF: Tc-99m IT decay half-life 6.0067 h.",
+      "dose_rate_provenance": "Existing Radshield Tc-99m patient-source constant (RMPS = 0.0206 uSv/h/MBq at 1 m); retained for Step 1 architecture validation pending separate dataset approval."
+    }
+  ]
+}

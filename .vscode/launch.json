@@ -1,0 +1,34 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Run RadShield",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/app.py",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "Debug RadShield",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/app.py",
+            "justMyCode": true,
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "Run CT Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/test_ct_examples.py",
+                "-v"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

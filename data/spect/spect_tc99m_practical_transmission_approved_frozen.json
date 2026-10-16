@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "dataset_id": "spect-tc99m-practical-transmission-oumano-2025-frozen",
+    "revision": "2026-08-23-step20-1",
+    "description": "Tc-99m broad-beam Archer transmission model independently checked against Oumano et al. (2025) Tables 2-3 and frozen for the non-production SPECT calculation stack. Dataset approval does not enable production SPECT.",
+    "approval_status": "physics_approved_frozen_nonproduction",
+    "model_scope": "broad_beam_archer_reference_model",
+    "contract_version": 1,
+    "room_scatter_caution_below_transmission": 0.01,
+    "source_model_min_transmission": 0.001,
+    "records_sha256": "9af69cf321e62435553b89ec4803206e72f648760d73b8176903e8fb2acb38de",
+    "approval_basis": "SPECT Step 20 transcription/model verification and project physics freeze; non-production use only."
+  },
+  "records": [
+    {
+      "record_id": "oumano-2025-tc99m-lead",
+      "material_key": "lead",
+      "material_label": "Lead",
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "alpha_mm_inv": 2.558,
+      "beta_mm_inv": 1.01,
+      "gamma": 4.344,
+      "reference_fractional_layers_mm": {
+        "hvl": 0.243,
+        "qvl": 0.512,
+        "tvl": 0.87,
+        "cvl": 1.77,
+        "mvl": 2.67
+      },
+      "provenance": {
+        "source_title": "Shielding resources for four common radiopharmaceuticals utilized for imaging and therapy: Tc-99m, F-18, I-131, and Lu-177",
+        "source_organisation": "Journal of Applied Clinical Medical Physics / AAPM",
+        "publication_year": 2025,
+        "reference_id": "J Appl Clin Med Phys. 2025;26(5):e70084; DOI 10.1002/acm2.70084",
+        "table_or_section": "Table 1 material densities; Table 2 Tc-99m Archer parameters; Table 3 fractional value layers; Equations 3-4",
+        "model_notes": "GATE broad-beam Monte Carlo model with independent MCNP6 comparison. The paper reports increasing geometry/scatter sensitivity below about 0.01 transmission; room scatter is not represented by the infinite-extent barrier Archer fit."
+      }
+    },
+    {
+      "record_id": "oumano-2025-tc99m-gypsum",
+      "material_key": "gypsum",
+      "material_label": "Gypsum",
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "alpha_mm_inv": 0.009549,
+      "beta_mm_inv": -0.005312,
+      "gamma": 1.43,
+      "reference_fractional_layers_mm": {
+        "hvl": 115.0,
+        "qvl": 199.0,
+        "tvl": 299.0,
+        "cvl": 542.0,
+        "mvl": 783.0
+      },
+      "provenance": {
+        "source_title": "Shielding resources for four common radiopharmaceuticals utilized for imaging and therapy: Tc-99m, F-18, I-131, and Lu-177",
+        "source_organisation": "Journal of Applied Clinical Medical Physics / AAPM",
+        "publication_year": 2025,
+        "reference_id": "J Appl Clin Med Phys. 2025;26(5):e70084; DOI 10.1002/acm2.70084",
+        "table_or_section": "Table 1 material densities; Table 2 Tc-99m Archer parameters; Table 3 fractional value layers; Equations 3-4",
+        "model_notes": "GATE broad-beam Monte Carlo model with independent MCNP6 comparison. The paper reports increasing geometry/scatter sensitivity below about 0.01 transmission; room scatter is not represented by the infinite-extent barrier Archer fit."
+      }
+    },
+    {
+      "record_id": "oumano-2025-tc99m-lightweight-concrete",
+      "material_key": "concrete_1600kg_m3",
+      "material_label": "Light-weight concrete",
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "alpha_mm_inv": 0.02047,
+      "beta_mm_inv": -0.01122,
+      "gamma": 0.4389,
+      "reference_fractional_layers_mm": {
+        "hvl": 64.6,
+        "qvl": 117.0,
+        "tvl": 176.0,
+        "cvl": 305.0,
+        "mvl": 423.0
+      },
+      "provenance": {
+        "source_title": "Shielding resources for four common radiopharmaceuticals utilized for imaging and therapy: Tc-99m, F-18, I-131, and Lu-177",
+        "source_organisation": "Journal of Applied Clinical Medical Physics / AAPM",
+        "publication_year": 2025,
+        "reference_id": "J Appl Clin Med Phys. 2025;26(5):e70084; DOI 10.1002/acm2.70084",
+        "table_or_section": "Table 1 material densities; Table 2 Tc-99m Archer parameters; Table 3 fractional value layers; Equations 3-4",
+        "model_notes": "GATE broad-beam Monte Carlo model with independent MCNP6 comparison. The paper reports increasing geometry/scatter sensitivity below about 0.01 transmission; room scatter is not represented by the infinite-extent barrier Archer fit."
+      }
+    },
+    {
+      "record_id": "oumano-2025-tc99m-normal-weight-concrete",
+      "material_key": "concrete_2300kg_m3",
+      "material_label": "Normal-weight concrete",
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "alpha_mm_inv": 0.03102,
+      "beta_mm_inv": -0.01729,
+      "gamma": 0.3622,
+      "reference_fractional_layers_mm": {
+        "hvl": 44.3,
+        "qvl": 80.6,
+        "tvl": 122.0,
+        "cvl": 211.0,
+        "mvl": 291.0
+      },
+      "provenance": {
+        "source_title": "Shielding resources for four common radiopharmaceuticals utilized for imaging and therapy: Tc-99m, F-18, I-131, and Lu-177",
+        "source_organisation": "Journal of Applied Clinical Medical Physics / AAPM",
+        "publication_year": 2025,
+        "reference_id": "J Appl Clin Med Phys. 2025;26(5):e70084; DOI 10.1002/acm2.70084",
+        "table_or_section": "Table 1 material densities; Table 2 Tc-99m Archer parameters; Table 3 fractional value layers; Equations 3-4",
+        "model_notes": "GATE broad-beam Monte Carlo model with independent MCNP6 comparison. The paper reports increasing geometry/scatter sensitivity below about 0.01 transmission; room scatter is not represented by the infinite-extent barrier Archer fit."
+      }
+    },
+    {
+      "record_id": "oumano-2025-tc99m-a514-steel",
+      "material_key": "a514_steel",
+      "material_label": "A514 steel",
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "alpha_mm_inv": 0.1581,
+      "beta_mm_inv": -0.04346,
+      "gamma": 0.2602,
+      "reference_fractional_layers_mm": {
+        "hvl": 5.86,
+        "qvl": 11.4,
+        "tvl": 18.4,
+        "cvl": 34.8,
+        "mvl": 50.4
+      },
+      "provenance": {
+        "source_title": "Shielding resources for four common radiopharmaceuticals utilized for imaging and therapy: Tc-99m, F-18, I-131, and Lu-177",
+        "source_organisation": "Journal of Applied Clinical Medical Physics / AAPM",
+        "publication_year": 2025,
+        "reference_id": "J Appl Clin Med Phys. 2025;26(5):e70084; DOI 10.1002/acm2.70084",
+        "table_or_section": "Table 1 material densities; Table 2 Tc-99m Archer parameters; Table 3 fractional value layers; Equations 3-4",
+        "model_notes": "GATE broad-beam Monte Carlo model with independent MCNP6 comparison. The paper reports increasing geometry/scatter sensitivity below about 0.01 transmission; room scatter is not represented by the infinite-extent barrier Archer fit."
+      }
+    },
+    {
+      "record_id": "oumano-2025-tc99m-glass",
+      "material_key": "glass_2500kg_m3",
+      "material_label": "Glass",
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "alpha_mm_inv": 0.03419,
+      "beta_mm_inv": -0.02009,
+      "gamma": 0.3076,
+      "reference_fractional_layers_mm": {
+        "hvl": 43.3,
+        "qvl": 78.8,
+        "tvl": 119.0,
+        "cvl": 204.0,
+        "mvl": 279.0
+      },
+      "provenance": {
+        "source_title": "Shielding resources for four common radiopharmaceuticals utilized for imaging and therapy: Tc-99m, F-18, I-131, and Lu-177",
+        "source_organisation": "Journal of Applied Clinical Medical Physics / AAPM",
+        "publication_year": 2025,
+        "reference_id": "J Appl Clin Med Phys. 2025;26(5):e70084; DOI 10.1002/acm2.70084",
+        "table_or_section": "Table 1 material densities; Table 2 Tc-99m Archer parameters; Table 3 fractional value layers; Equations 3-4",
+        "model_notes": "GATE broad-beam Monte Carlo model with independent MCNP6 comparison. The paper reports increasing geometry/scatter sensitivity below about 0.01 transmission; room scatter is not represented by the infinite-extent barrier Archer fit."
+      }
+    }
+  ]
+}

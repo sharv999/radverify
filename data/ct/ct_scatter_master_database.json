@@ -1,0 +1,1721 @@
+{
+  "schema_version": "2.2",
+  "data_revision": "v2.2.8-ksec-only-clean",
+  "scanner_families": {
+    "GE_DISCOVERY_NMCT_670": {
+      "vendor": "GE HealthCare",
+      "modality_class": "SPECT_CT",
+      "description": "GE Discovery NM/CT 670 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0026,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Discovery NM/CT 670",
+      "ksec_energy_kvp": null
+    },
+    "GE_NMCT_870": {
+      "vendor": "GE HealthCare",
+      "modality_class": "SPECT_CT",
+      "description": "GE NM/CT 870 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0026,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "NM/CT 870",
+      "ksec_energy_kvp": null
+    },
+    "GE_DISCOVERY_NMCT_670_CZT": {
+      "vendor": "GE HealthCare",
+      "modality_class": "SPECT_CT",
+      "description": "GE Discovery NM/CT 670 CZT low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0026,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Discovery NM/CT 670 CZT",
+      "ksec_energy_kvp": null
+    },
+    "GE_NMCT_870_CZT": {
+      "vendor": "GE HealthCare",
+      "modality_class": "SPECT_CT",
+      "description": "GE NM/CT 870 CZT low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0026,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "NM/CT 870 CZT",
+      "ksec_energy_kvp": null
+    },
+    "GE_NMCT_850": {
+      "vendor": "GE HealthCare",
+      "modality_class": "SPECT_CT",
+      "description": "GE NM/CT 850 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0062,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "NM/CT 850",
+      "ksec_energy_kvp": null
+    },
+    "GE_NMCT_860": {
+      "vendor": "GE HealthCare",
+      "modality_class": "SPECT_CT",
+      "description": "GE NM/CT 860 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0062,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "NM/CT 860",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_T2": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia T2 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.022,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia T2",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_T6": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia T6 CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.02467,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia T6",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_T16": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia T16 CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.02833,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia T16",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_INTEVO_EXCEL": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia Intevo Excel CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0023,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia Intevo Excel",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_INTEVO_6": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia Intevo 6 CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0067,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia Intevo 6",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_INTEVO_16": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia Intevo 16 CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0085,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia Intevo 16",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_INTEVO_BOLD": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia Intevo Bold CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0085,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia Intevo Bold",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_PROSPECTA_Q3": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia Pro.specta Q3 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0055,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia Pro.specta Q3",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_PROSPECTA_X3": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia Pro.specta X3 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.00749,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia Pro.specta X3",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SYMBIA_PROSPECTA_X7": {
+      "vendor": "Siemens",
+      "modality_class": "SPECT_CT",
+      "description": "Siemens Symbia Pro.specta X7 low-dose CT component.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.01056,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "hybrid_ct_component_attenuation_correction",
+      "short_name": "Symbia Pro.specta X7",
+      "ksec_energy_kvp": null
+    },
+    "GE_REVOLUTION_APEX_FAMILY": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE Revolution Apex / Apex Elite diagnostic CT family.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0457,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Revolution Apex / Apex Elite",
+      "ksec_energy_kvp": null
+    },
+    "GE_OPTIMA_CT580": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE Optima CT580 diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.00526,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Optima CT580",
+      "ksec_energy_kvp": null
+    },
+    "GE_REVOLUTION_EVO": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE Revolution EVO diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0104,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Revolution EVO",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_FORCE": {
+      "vendor": "Siemens",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM Force diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.03121,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM Force",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_DEFINITION_AS": {
+      "vendor": "Siemens",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM Definition AS diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.01578,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM Definition AS",
+      "ksec_energy_kvp": null
+    },
+    "GE_REVOLUTION_MAXIMA": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE Revolution Maxima diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0104,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Revolution Maxima",
+      "ksec_energy_kvp": null
+    },
+    "GE_LIGHTSPEED_3": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE LightSpeed 3 CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0026,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "LightSpeed 3",
+      "ksec_energy_kvp": null
+    },
+    "GE_LIGHTSPEED_PRO_16": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE LightSpeed Pro 16 CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0052,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "LightSpeed Pro16",
+      "ksec_energy_kvp": null
+    },
+    "GE_LIGHTSPEED_VCT": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE LightSpeed VCT CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0104,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "LightSpeed VCT",
+      "ksec_energy_kvp": null
+    },
+    "GE_OPTIMA_CT660": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE OPTIMA CT660 diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0104,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Optima CT660",
+      "ksec_energy_kvp": null
+    },
+    "GE_OPTIMA_CT680": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE OPTIMA CT680 diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0104,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Optima CT680",
+      "ksec_energy_kvp": null
+    },
+    "GE_REVOLUTION_ASCEND": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE Revolution Ascend diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0145,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Revolution Ascend",
+      "ksec_energy_kvp": null
+    },
+    "GE_REVOLUTION_FRONTIER": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE Revolution Frontier diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0104,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Revolution Frontier",
+      "ksec_energy_kvp": null
+    },
+    "GE_REVOLUTION_ACT": {
+      "vendor": "GE HealthCare",
+      "modality_class": "CT",
+      "description": "GE Revolution ACT diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0104,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Revolution ACT",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_NAEOTOM_ALPHA": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens NAEOTOM Alpha.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.02904,
+      "ksec_definition": "radial_max",
+      "ksec_source": "pending_vendor_source",
+      "ksec_confidence": "pending",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "NAEOTOM Alpha",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_NAEOTOM_ALPHA_PRO": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens NAEOTOM Alpha.Pro.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.02023,
+      "ksec_definition": "radial_max",
+      "ksec_source": "pending_vendor_source",
+      "ksec_confidence": "pending",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "NAEOTOM Alpha.Pro",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_PROPULSE": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM Pro.Pulse diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0271,
+      "ksec_definition": "radial_max",
+      "ksec_source": "pending_vendor_source",
+      "ksec_confidence": "pending",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM Pro.Pulse",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_XCITE": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM X.cite diagnostic CT. ",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.02282,
+      "ksec_definition": "radial_max",
+      "ksec_source": "pending_vendor_source",
+      "ksec_confidence": "pending",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM X.cite",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_XCEED": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM X.ceed diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0238,
+      "ksec_definition": "radial_max",
+      "ksec_source": "pending_vendor_source",
+      "ksec_confidence": "pending",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM X.ceed",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_GO_TOP": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM go.Top diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0215,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM go.Top",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_SENSATION_64": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM Sensation 64 diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0125,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM Sensation 64",
+      "ksec_energy_kvp": null
+    },
+    "SIEMENS_SOMATOM_Perspective": {
+      "vendor": "Siemens Healthineers",
+      "modality_class": "CT",
+      "description": "Siemens SOMATOM Perspective diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0182,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "SOMATOM Perspective",
+      "ksec_energy_kvp": null
+    },
+    "CANON_AQUILION_ONE_INSIGHT": {
+      "vendor": "Canon Medical",
+      "modality_class": "CT",
+      "description": "Canon Aquilion ONE / INSIGHT Edition diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.016,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Aquilion ONE / INSIGHT Edition",
+      "ksec_energy_kvp": null
+    },
+    "CANON_AQUILION_ONE_PRISM": {
+      "vendor": "Canon Medical",
+      "modality_class": "CT",
+      "description": "Canon Aquilion ONE / PRISM Edition diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.02,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Aquilion ONE / PRISM Edition",
+      "ksec_energy_kvp": null
+    },
+    "CANON_AQUILION_SERVE": {
+      "vendor": "Canon Medical",
+      "modality_class": "CT",
+      "description": "Canon Aquilion Serve diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.016,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Aquilion Serve",
+      "ksec_energy_kvp": null
+    },
+    "CANON_AQUILION_EXCEED_LB": {
+      "vendor": "Canon Medical",
+      "modality_class": "CT",
+      "description": "Canon Aquilion Exceed LB large-bore diagnostic / oncology CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.005,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Aquilion Exceed LB",
+      "ksec_energy_kvp": null
+    },
+    "CANON_AQUILION_PRIME_SP": {
+      "vendor": "Canon Medical",
+      "modality_class": "CT",
+      "description": "Canon Aquilion Prime SP diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.016,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Aquilion Prime SP",
+      "ksec_energy_kvp": null
+    },
+    "PHILIPS_SPECTRAL_CT_7000": {
+      "vendor": "Philips",
+      "modality_class": "CT",
+      "description": "Philips Spectral CT 7000 detector-based spectral CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0628,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Spectral CT 7000",
+      "ksec_energy_kvp": null
+    },
+    "PHILIPS_INCISIVE_CT_5300": {
+      "vendor": "Philips",
+      "modality_class": "CT",
+      "description": "Philips Incisive CT 5300 diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": 0.0163,
+      "ksec_definition": "radial_max",
+      "ksec_source": "manual_entry",
+      "ksec_confidence": "engineering_estimate",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Incisive CT 5300",
+      "ksec_energy_kvp": null
+    },
+    "PHILIPS_BRILLIANCE_64": {
+      "vendor": "Philips",
+      "modality_class": "CT",
+      "description": "Philips Brilliance 64 diagnostic CT.",
+      "normalisation": {
+        "mAs_reference": 100.0
+      },
+      "geometry": {
+        "data_type": "ksec_only"
+      },
+      "profiles": null,
+      "protocols": {
+        "reference_100mAs": {
+          "label": "Reference 100 mAs",
+          "mAs_per_scan": 100.0,
+          "available": true,
+          "is_reference": true
+        }
+      },
+      "worst_case_ksec_mGy_per_100mAs_at_1m": null,
+      "ksec_definition": "radial_max",
+      "ksec_source": "pending_vendor_source",
+      "ksec_confidence": "pending",
+      "canonical_scatter_unit": "uGy_per_100mAs",
+      "ksec_reference_distance_m": 1.0,
+      "ct_scanner_metadata": "ct_standalone_diagnostic",
+      "short_name": "Brilliance 64",
+      "ksec_energy_kvp": null
+    }
+  },
+  "aliases": {
+    "Discovery NM/CT 670": "GE_DISCOVERY_NMCT_670",
+    "Discovery NM/CT 670 CZT": "GE_DISCOVERY_NMCT_670_CZT",
+    "NM/CT 870": "GE_NMCT_870",
+    "NM/CT 870 DR": "GE_NMCT_870",
+    "NM/CT 870 CZT": "GE_NMCT_870_CZT",
+    "NM/CT 850": "GE_NMCT_850",
+    "NM/CT 860": "GE_NMCT_860",
+    "Symbia T": "SIEMENS_SYMBIA_T2",
+    "Symbia T2": "SIEMENS_SYMBIA_T2",
+    "Symbia T6": "SIEMENS_SYMBIA_T6",
+    "Symbia T16": "SIEMENS_SYMBIA_T16",
+    "Symbia Intevo Excel": "SIEMENS_SYMBIA_INTEVO_EXCEL",
+    "Symbia Intevo 6": "SIEMENS_SYMBIA_INTEVO_6",
+    "Symbia Intevo 16": "SIEMENS_SYMBIA_INTEVO_16",
+    "Symbia Intevo Bold": "SIEMENS_SYMBIA_INTEVO_BOLD",
+    "Symbia Pro.specta Q3": "SIEMENS_SYMBIA_PROSPECTA_Q3",
+    "Symbia Pro.specta X3": "SIEMENS_SYMBIA_PROSPECTA_X3",
+    "Symbia Pro.specta X7": "SIEMENS_SYMBIA_PROSPECTA_X7",
+    "Revolution Apex": "GE_REVOLUTION_APEX_FAMILY",
+    "Revolution Apex Elite": "GE_REVOLUTION_APEX_FAMILY",
+    "GE Revolution Apex": "GE_REVOLUTION_APEX_FAMILY",
+    "GE Revolution Apex Elite": "GE_REVOLUTION_APEX_FAMILY",
+    "Optima CT580": "GE_OPTIMA_CT580",
+    "Optima CT 580": "GE_OPTIMA_CT580",
+    "GE Optima CT580": "GE_OPTIMA_CT580",
+    "Optima CT660": "GE_OPTIMA_CT660",
+    "Optima CT 660": "GE_OPTIMA_CT660",
+    "GE Optima CT660": "GE_OPTIMA_CT660",
+    "Optima CT680": "GE_OPTIMA_CT680",
+    "Optima CT 680": "GE_OPTIMA_CT680",
+    "GE Optima CT680": "GE_OPTIMA_CT680",
+    "Revolution EVO": "GE_REVOLUTION_EVO",
+    "GE Revolution EVO": "GE_REVOLUTION_EVO",
+    "Revolution Maxima": "GE_REVOLUTION_MAXIMA",
+    "GE Revolution Maxima": "GE_REVOLUTION_MAXIMA",
+    "LightSpeed Pro 16": "GE_LIGHTSPEED_PRO_16",
+    "LightSpeed Pro16": "GE_LIGHTSPEED_PRO_16",
+    "GE LightSpeed Pro 16": "GE_LIGHTSPEED_PRO_16",
+    "LightSpeed 3": "GE_LIGHTSPEED_3",
+    "GE LightSpeed 3": "GE_LIGHTSPEED_3",
+    "LightSpeed VCT": "GE_LIGHTSPEED_VCT",
+    "GE LightSpeed VCT": "GE_LIGHTSPEED_VCT",
+    "Revolution Ascend": "GE_REVOLUTION_ASCEND",
+    "GE Revolution Ascend": "GE_REVOLUTION_ASCEND",
+    "Revolution Frontier": "GE_REVOLUTION_FRONTIER",
+    "GE Revolution ACT": "GE_REVOLUTION_ACT",
+    "Revolution ACT": "GE_REVOLUTION_ACT",
+    "SOMATOM Force": "SIEMENS_SOMATOM_FORCE",
+    "Siemens SOMATOM Force": "SIEMENS_SOMATOM_FORCE",
+    "Siemens Somatom Force": "SIEMENS_SOMATOM_FORCE",
+    "Somatom Force": "SIEMENS_SOMATOM_FORCE",
+    "SOMATOM Definition AS": "SIEMENS_SOMATOM_DEFINITION_AS",
+    "Siemens SOMATOM Definition AS": "SIEMENS_SOMATOM_DEFINITION_AS",
+    "Definition AS": "SIEMENS_SOMATOM_DEFINITION_AS",
+    "Siemens NAEOTOM Alpha": "SIEMENS_NAEOTOM_ALPHA",
+    "Siemens Naeotom Alpha": "SIEMENS_NAEOTOM_ALPHA",
+    "Naeotom Alpha": "SIEMENS_NAEOTOM_ALPHA",
+    "Siemens NAEOTOM Alpha.Pro": "SIEMENS_NAEOTOM_ALPHA_PRO",
+    "Siemens Naeotom Alpha.Pro": "SIEMENS_NAEOTOM_ALPHA_PRO",
+    "Naeotom Alpha.Pro": "SIEMENS_NAEOTOM_ALPHA_PRO",
+    "Siemens SOMATOM Propulse": "SIEMENS_SOMATOM_PROPULSE",
+    "Siemens Somatom Propulse": "SIEMENS_SOMATOM_PROPULSE",
+    "Somatom Propulse": "SIEMENS_SOMATOM_PROPULSE",
+    "Siemens SOMATOM Xcite": "SIEMENS_SOMATOM_XCITE",
+    "Siemens Somatom Xcite": "SIEMENS_SOMATOM_XCITE",
+    "Somatom Xcite": "SIEMENS_SOMATOM_XCITE",
+    "Siemens SOMATOM Xceed": "SIEMENS_SOMATOM_XCEED",
+    "Siemens Somatom Xceed": "SIEMENS_SOMATOM_XCEED",
+    "Somatom Xceed": "SIEMENS_SOMATOM_XCEED",
+    "Siemens SOMATOM Go.Top": "SIEMENS_SOMATOM_GO_TOP",
+    "Siemens Somatom Go.Top": "SIEMENS_SOMATOM_GO_TOP",
+    "Somatom Go.Top": "SIEMENS_SOMATOM_GO_TOP",
+    "Siemens SOMATOM Sensation 64": "SIEMENS_SOMATOM_SENSATION_64",
+    "Siemens Somatom Sensation 64": "SIEMENS_SOMATOM_SENSATION_64",
+    "Somatom Sensation 64": "SIEMENS_SOMATOM_SENSATION_64",
+    "Siemens SOMATOM Perspective": "SIEMENS_SOMATOM_Perspective",
+    "Siemens Somatom Perspective": "SIEMENS_SOMATOM_Perspective",
+    "Canon Aquilion ONE / INSIGHT Edition": "CANON_AQUILION_ONE_INSIGHT",
+    "Aquilion ONE / INSIGHT Edition": "CANON_AQUILION_ONE_INSIGHT",
+    "Canon Aquilion ONE / PRISM Edition": "CANON_AQUILION_ONE_PRISM",
+    "Aquilion ONE / PRISM Edition": "CANON_AQUILION_ONE_PRISM",
+    "Canon Aquilion Serve": "CANON_AQUILION_SERVE",
+    "Aquilion Serve": "CANON_AQUILION_SERVE",
+    "Canon Aquilion Exceed LB": "CANON_AQUILION_EXCEED_LB",
+    "Aquilion Exceed LB": "CANON_AQUILION_EXCEED_LB",
+    "Canon Aquilion Prime SP": "CANON_AQUILION_PRIME_SP",
+    "Aquilion Prime SP": "CANON_AQUILION_PRIME_SP",
+    "Philips Spectral CT 7000": "PHILIPS_SPECTRAL_CT_7000",
+    "Spectral CT 7000": "PHILIPS_SPECTRAL_CT_7000",   
+    "Philips Incisive CT 5300": "PHILIPS_INCISIVE_CT_5300",
+    "Incisive CT 5300": "PHILIPS_INCISIVE_CT_5300",
+    "Philips Brilliance 64": "PHILIPS_BRILLIANCE_64",
+    "Brilliance 64": "PHILIPS_BRILLIANCE_64"
+  },
+  "sources": [
+    {
+      "family_id": "GE_DISCOVERY_NMCT_670",
+      "document_name": "5483016-1EN, Rev.10.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_NMCT_870",
+      "document_name": "5483016-1EN, Rev.10.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_DISCOVERY_NMCT_670_CZT",
+      "document_name": "5718527-1EN, Rev.6.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_NMCT_870_CZT",
+      "document_name": "5718527-1EN, Rev.6.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_NMCT_850",
+      "document_name": "5789917-1EN, Rev.6.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_NMCT_860",
+      "document_name": "5789917-1EN, Rev.6.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_T2",
+      "document_name": "13042.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_T6",
+      "document_name": "13042.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_T16",
+      "document_name": "13042.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_INTEVO_EXCEL",
+      "document_name": "13041.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_INTEVO_6",
+      "document_name": "13041.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_INTEVO_16",
+      "document_name": "13041.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_INTEVO_BOLD",
+      "document_name": "13041.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_PROSPECTA_Q3",
+      "document_name": "22087.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_PROSPECTA_X3",
+      "document_name": "22087.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SYMBIA_PROSPECTA_X7",
+      "document_name": "22087.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_REVOLUTION_APEX_FAMILY",
+      "document_name": "5418654-1EN Revision 27.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_REVOLUTION_MAXIMA",
+      "document_name": "PIM_5809942-1EN_8.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_LIGHTSPEED_3",
+      "document_name": "PIM_2296438-100_7.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_LIGHTSPEED_PRO_16",
+      "document_name": "PIM_2349181-100_14.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_LIGHTSPEED_VCT",
+      "document_name": "PIM_5116410-100_17.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_OPTIMA_CT660",
+      "document_name": "PIM_5368510-1EN_6.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_OPTIMA_CT680",
+      "document_name": "PIM_5809942-1EN_8.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_REVOLUTION_ASCEND",
+      "document_name": "PIM_5987663-1EN_6.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_REVOLUTION_FRONTIER",
+      "document_name": "PIM_5786386-1EN_9.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_REVOLUTION_ACT",
+      "document_name": "PIM_5487127-1EN_12.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_OPTIMA_CT580",
+      "document_name": "5366636-1EN Revision 23.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "GE_REVOLUTION_EVO",
+      "document_name": "5866663-1EN Rev 9.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_FORCE",
+      "document_name": "13045.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_DEFINITION_AS",
+      "document_name": "C2-029.891.01.38.02.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_NAEOTOM_ALPHA",
+      "document_name": "21086.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_NAEOTOM_ALPHA_PRO",
+      "document_name": "21086.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_PROPULSE",
+      "document_name": "23098.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_XCITE",
+      "document_name": "19077.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_XCEED",
+      "document_name": "21085.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_GO_TOP",
+      "document_name": "18068.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_SENSATION_64",
+      "document_name": "04099.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "SIEMENS_SOMATOM_Perspective",
+      "document_name": "12033.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "CANON_AQUILION_ONE_PRISM",
+      "document_name": "2a201_709en.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "CANON_AQUILION_ONE_INSIGHT",
+      "document_name": "2B201-907EN*E.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "CANON_AQUILION_SERVE",
+      "document_name": "2B203-490EN*A.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "CANON_AQUILION_PRIME_SP",
+      "document_name": "2B201-907EN*E.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "CANON_AQUILION_EXCEED_LB",
+      "document_name": "2B201-337EN*F.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "PHILIPS_SPECTRAL_CT_7000",
+      "document_name": "300012082442_A_spectral_ct_7000_Family_trg_en-us_SP1.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "PHILIPS_INCISIVE_CT_5300",
+      "document_name": "CT 5300+Incisive CT-300008021402_A-UM-print-AEN.pdf",
+      "reference_type": "vendor_source"
+    },
+    {
+      "family_id": "PHILIPS_BRILLIANCE_64",
+      "document_name": "Philips_Brilliance_64_Radiation_Protection.pdf",
+      "reference_type": "vendor_source"
+    }
+
+  ],
+  "ct_scanner_metadata_groups": {
+    "hybrid_ct_component_attenuation_correction": [
+      "GE_DISCOVERY_NMCT_670",
+      "GE_NMCT_870",
+      "GE_DISCOVERY_NMCT_670_CZT",
+      "GE_NMCT_870_CZT",
+      "GE_NMCT_850",
+      "GE_NMCT_860",
+      "SIEMENS_SYMBIA_T2",
+      "SIEMENS_SYMBIA_T6",
+      "SIEMENS_SYMBIA_T16",
+      "SIEMENS_SYMBIA_INTEVO_EXCEL",
+      "SIEMENS_SYMBIA_INTEVO_6",
+      "SIEMENS_SYMBIA_INTEVO_16",
+      "SIEMENS_SYMBIA_INTEVO_BOLD",
+      "SIEMENS_SYMBIA_PROSPECTA_Q3",
+      "SIEMENS_SYMBIA_PROSPECTA_X3",
+      "SIEMENS_SYMBIA_PROSPECTA_X7"
+    ],
+    "hybrid_ct_component_diagnostic": [],
+    "ct_standalone_diagnostic": [
+      "GE_REVOLUTION_APEX_FAMILY",
+      "GE_OPTIMA_CT580",
+      "GE_REVOLUTION_EVO",
+      "GE_REVOLUTION_MAXIMA",
+      "GE_LIGHTSPEED_3",
+      "GE_LIGHTSPEED_PRO_16",
+      "GE_LIGHTSPEED_VCT",
+      "GE_OPTIMA_CT660",
+      "GE_OPTIMA_CT680",
+      "GE_REVOLUTION_ASCEND",
+      "GE_REVOLUTION_FRONTIER",
+      "GE_REVOLUTION_ACT",
+      "SIEMENS_SOMATOM_FORCE",
+      "SIEMENS_SOMATOM_DEFINITION_AS",
+      "SIEMENS_NAEOTOM_ALPHA",
+      "SIEMENS_NAEOTOM_ALPHA_PRO",
+      "SIEMENS_SOMATOM_PROPULSE",
+      "SIEMENS_SOMATOM_XCITE",
+      "SIEMENS_SOMATOM_XCEED",
+      "SIEMENS_SOMATOM_GO_TOP",
+      "SIEMENS_SOMATOM_SENSATION_64",
+      "SIEMENS_SOMATOM_Perspective",
+      "CANON_AQUILION_ONE_INSIGHT",
+      "CANON_AQUILION_ONE_PRISM",
+      "CANON_AQUILION_SERVE",
+      "CANON_AQUILION_EXCEED_LB",
+      "CANON_AQUILION_PRIME_SP",
+      "PHILIPS_SPECTRAL_CT_7000",
+      "PHILIPS_INCISIVE_CT_5300",
+      "PHILIPS_BRILLIANCE_64"
+    ]
+  }
+}

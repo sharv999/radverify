@@ -1,0 +1,144 @@
+{
+  "project_name": "BIR_p102",
+  "client": "Example Imaging Pty Ltd",
+  "site": "123 Example Street, Sydney NSW",
+  "assessor": "Health Physics Pty Ltd",
+  "date": "2026-07-01",
+  "modality": "CT",
+  "notes": "Simplified preliminary shielding assessment.",
+  "tvl_library_mm_pb": {
+    "xray_80kvp": 0.25,
+    "xray_100kvp": 0.27,
+    "xray_120kvp": 0.3,
+    "xray_140kvp": 0.33,
+    "ct_120kvp": 0.3,
+    "ct_140kvp": 0.33,
+    "tc99m": 0.3,
+    "i131": 3.0
+  },
+  "patient_dose_constants": {},
+  "sources": [
+    {
+      "name": "Secondary scatter source diagnostic",
+      "source_type": "ct_scatter",
+      "radiation_type": "xray_140kvp",
+      "params": {
+        "preset": "ct_low_dose",
+        "use_scanner_db": "1",
+        "manual_ksec_override": "1",
+        "scanner_family": "CANON_AQUILION_EXCEED_LB",
+        "scanner_phantom": "body",
+        "scanner_vendor": "Canon",
+        "scanner_model": "Canon Aquilion Exceed LB",
+        "scanner_kvp": 140,
+        "scanner_source": "Canon / Canon Aquilion Exceed LB -> JSON worst-case Ksec lookup (CANON_AQUILION_EXCEED_LB)",
+        "scans_per_week": 150.0,
+        "ksec_mGy_per_100mAs_at_1m": 0.0535,
+        "workload_mAs_per_scan": 250.0,
+        "manual_ksec_entered_by": "Health Physics Pty Ltd",
+        "manual_ksec_reason": "",
+        "manual_ksec_reference": "",
+        "manual_ksec_last_updated": "2026-07-01 20:41"
+      },
+      "room_name": "CT Room 1"
+    }
+  ],
+  "rooms": [
+    {
+      "name": "CT Room 1",
+      "modality": "CT",
+      "sources": [],
+      "barriers": [
+        {
+          "name": "N wall",
+          "material": "Pb",
+          "thickness_mm": 2.2,
+          "adjacent_area": "Corridor",
+          "barrier_role": "secondary_wall",
+          "distance_m": 2.0,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 10.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": ""
+        },
+        {
+          "name": "E wall",
+          "material": "Pb",
+          "thickness_mm": 1.32,
+          "adjacent_area": "Corridor",
+          "barrier_role": "secondary_wall",
+          "distance_m": 3.2,
+          "occupancy_factor": 0.2,
+          "design_goal_uSv_per_week": 10.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": ""
+        },
+        {
+          "name": "S wall",
+          "material": "Pb",
+          "thickness_mm": 1.76,
+          "adjacent_area": "Corridor",
+          "barrier_role": "secondary_wall",
+          "distance_m": 3.5,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 10.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": ""
+        },
+        {
+          "name": "W wall",
+          "material": "Pb",
+          "thickness_mm": 1.76,
+          "adjacent_area": "Corridor",
+          "barrier_role": "secondary_wall",
+          "distance_m": 2.3,
+          "occupancy_factor": 0.5,
+          "design_goal_uSv_per_week": 10.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": ""
+        },
+        {
+          "name": "Floor",
+          "material": "Concrete",
+          "thickness_mm": 100.0,
+          "adjacent_area": "Clinical Area",
+          "barrier_role": "floor",
+          "distance_m": 1.0,
+          "occupancy_factor": 0.025,
+          "design_goal_uSv_per_week": 10.0,
+          "material_legacy": "Concrete 150 mm",
+          "notes": ""
+        },
+        {
+          "name": "Ceiling",
+          "material": "Concrete",
+          "thickness_mm": 100.0,
+          "adjacent_area": "Clinical Area",
+          "barrier_role": "ceiling",
+          "distance_m": 3.0,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 10.0,
+          "material_legacy": "Concrete 150 mm",
+          "notes": ""
+        }
+      ],
+      "geometry": {
+        "room_name": "CT Room 1",
+        "length_m": 5.5,
+        "width_m": 5.5,
+        "height_m": 4.0,
+        "source": {
+          "label": "Canon Aquilion Exceed LB",
+          "x_m": 2.3,
+          "y_m": 3.5,
+          "rotation_deg": 0
+        },
+        "openings": [],
+        "wall_bucky": null
+      }
+    }
+  ],
+  "file_role": "working_project",
+  "save_schema": "radshield_working_project_v1",
+  "schema_version": 1
+}

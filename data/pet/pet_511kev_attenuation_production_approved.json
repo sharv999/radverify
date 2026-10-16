@@ -1,0 +1,85 @@
+{
+  "metadata": {
+    "schema_version": 1,
+    "dataset_id": "pet-511kev-aapm-tg108-review-fixture",
+    "revision": "2026-07-19-review-1",
+    "description": "Pre-production PET 511 keV attenuation fixture transcribed and reduced from AAPM TG-108 broad-beam transmission data. Values require user verification and explicit approval before production use.",
+    "approval_status": "production_approved",
+    "reviewed_by": "OpenAI-assisted code review",
+    "reviewed_date": "2026-07-19",
+    "approved_by": "Steve H",
+    "approved_date": "2026-07-19",
+    "approved_records_sha256": "a24a2dd344d0ae35c5e7ebb880afef18681572f884f8f3ca043610c7545caeb5"
+  },
+  "records": [
+    {
+      "record_id": "tg108-511kev-lead-provisional",
+      "tvl_key": "pet_511kev",
+      "radiation_type": "annihilation_511kev",
+      "material_key": "lead",
+      "tvl1_mm": 16.0,
+      "tvle_mm": 14.8,
+      "radionuclides": [
+        "F18",
+        "Ga68",
+        "Cu64"
+      ],
+      "nominal_energy_kev": 511.0,
+      "provenance": {
+        "source_title": "AAPM Task Group 108: PET and PET/CT Shielding Requirements",
+        "source_organisation": "American Association of Physicists in Medicine",
+        "publication_year": 2006,
+        "table_or_section": "Table IV, broad-beam transmission factors at 511 keV; lead column",
+        "reference_id": "AAPM Report No. 108; Medical Physics 33(1):4-15; DOI 10.1118/1.2135911",
+        "edition": "Report No. 108",
+        "notes": "Provisional piecewise-TVL reduction for contract testing: TVL1 is the approximately 0.1 transmission thickness; TVLe is estimated from subsequent attenuation decades. Verify against the source table and approved calculation method before production use."
+      }
+    },
+    {
+      "record_id": "tg108-511kev-concrete-2350-provisional",
+      "tvl_key": "pet_511kev",
+      "radiation_type": "annihilation_511kev",
+      "material_key": "concrete_2350kg_m3",
+      "tvl1_mm": 195.0,
+      "tvle_mm": 153.0,
+      "radionuclides": [
+        "F18",
+        "Ga68",
+        "Cu64"
+      ],
+      "nominal_energy_kev": 511.0,
+      "provenance": {
+        "source_title": "AAPM Task Group 108: PET and PET/CT Shielding Requirements",
+        "source_organisation": "American Association of Physicists in Medicine",
+        "publication_year": 2006,
+        "table_or_section": "Table IV, broad-beam transmission factors at 511 keV; concrete column (density 2.35 g/cm3)",
+        "reference_id": "AAPM Report No. 108; Medical Physics 33(1):4-15; DOI 10.1118/1.2135911",
+        "edition": "Report No. 108",
+        "notes": "Provisional interpolation/reduction of tabulated broad-beam transmission values. Concrete density is part of the material identity. Verify interpolation and solver suitability before production use."
+      }
+    },
+    {
+      "record_id": "tg108-511kev-iron-provisional",
+      "tvl_key": "pet_511kev",
+      "radiation_type": "annihilation_511kev",
+      "material_key": "iron",
+      "tvl1_mm": 58.0,
+      "tvle_mm": 44.0,
+      "radionuclides": [
+        "F18",
+        "Ga68",
+        "Cu64"
+      ],
+      "nominal_energy_kev": 511.0,
+      "provenance": {
+        "source_title": "AAPM Task Group 108: PET and PET/CT Shielding Requirements",
+        "source_organisation": "American Association of Physicists in Medicine",
+        "publication_year": 2006,
+        "table_or_section": "Table IV, broad-beam transmission factors at 511 keV; iron column",
+        "reference_id": "AAPM Report No. 108; Medical Physics 33(1):4-15; DOI 10.1118/1.2135911",
+        "edition": "Report No. 108",
+        "notes": "Provisional interpolation/reduction of tabulated broad-beam transmission values. Verify interpolation and material applicability before production use."
+      }
+    }
+  ]
+}

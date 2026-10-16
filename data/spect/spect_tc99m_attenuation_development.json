@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "contract_version": 1,
+    "dataset_id": "spect-tc99m-attenuation-nist-xcom-development",
+    "revision": "2026-08-22-step-2",
+    "description": "SPECT Step 2 Tc-99m attenuation reference data. Narrow-beam NIST XCOM data only; not a practical broad-beam shielding dataset and not approved for production calculation.",
+    "approval_status": "development_nonproduction",
+    "model_scope": "narrow_beam_exponential_reference_only",
+    "records_sha256": "406d0c340a353ce2b451388d2daea5a9aa459505bba48796c13f009df82237bf"
+  },
+  "records": [
+    {
+      "record_id": "nist-xcom-tc99m-lead-development",
+      "material_key": "lead",
+      "density_g_cm3": 11.35,
+      "nominal_energy_kev": 140.511,
+      "mass_attenuation_coefficient_cm2_g": 2.371374004174,
+      "linear_attenuation_coefficient_cm_inv": 26.915094947375,
+      "hvl_mm": 0.257531018157,
+      "tvl_mm": 0.855499524522,
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "attenuation_geometry": "narrow_beam",
+      "provenance": {
+        "source_title": "X-Ray Mass Attenuation Coefficients - Lead",
+        "source_organisation": "National Institute of Standards and Technology (NIST)",
+        "publication_year": 2004,
+        "reference_id": "Hubbell and Seltzer, NISTIR 5632; NIST X-Ray Mass Attenuation Coefficients",
+        "table_or_section": "Lead (Z=82), tabulated total mass attenuation coefficients at 0.100 and 0.150 MeV",
+        "source_values": "mu/rho = 5.549 cm2/g at 0.100 MeV and 2.014 cm2/g at 0.150 MeV; density = 11.35 g/cm3.",
+        "derivation": "Log-log interpolation of mu/rho to 0.140511 MeV; mu = (mu/rho)*density; HVL = ln(2)/mu; TVL = ln(10)/mu.",
+        "notes": "Narrow-beam exponential attenuation reference only. Scatter/buildup and practical broad-beam shielding transmission are not represented."
+      }
+    },
+    {
+      "record_id": "nist-xcom-tc99m-ordinary-concrete-development",
+      "material_key": "concrete_2300kg_m3",
+      "density_g_cm3": 2.3,
+      "nominal_energy_kev": 140.511,
+      "mass_attenuation_coefficient_cm2_g": 0.148086280403,
+      "linear_attenuation_coefficient_cm_inv": 0.340598444927,
+      "hvl_mm": 20.350861575674,
+      "tvl_mm": 67.604098823401,
+      "radionuclide": "Tc99m",
+      "radiation_type": "tc99m_140kev",
+      "tvl_key": "tc99m_140kev",
+      "attenuation_geometry": "narrow_beam",
+      "provenance": {
+        "source_title": "X-Ray Mass Attenuation Coefficients - Concrete, Ordinary",
+        "source_organisation": "National Institute of Standards and Technology (NIST)",
+        "publication_year": 2004,
+        "reference_id": "Hubbell and Seltzer, NISTIR 5632; NIST X-Ray Mass Attenuation Coefficients",
+        "table_or_section": "Concrete, Ordinary, tabulated total mass attenuation coefficients at 0.100 and 0.150 MeV; material density from NIST composition table",
+        "source_values": "mu/rho = 0.1738 cm2/g at 0.100 MeV and 0.1436 cm2/g at 0.150 MeV; density = 2.300 g/cm3.",
+        "derivation": "Log-log interpolation of mu/rho to 0.140511 MeV; mu = (mu/rho)*density; HVL = ln(2)/mu; TVL = ln(10)/mu.",
+        "notes": "Narrow-beam exponential attenuation reference only. Concrete density/composition is part of the material identity; practical shielding requires a separately reviewed broad-beam model."
+      }
+    }
+  ]
+}

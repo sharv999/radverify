@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+
+        {
+            "label": "Run RadShield",
+            "type": "shell",
+            "command": "python app.py",
+            "group": "build"
+        },
+
+        {
+            "label": "Run All Tests",
+            "type": "shell",
+            "command": "pytest tests -v",
+            "group": "test"
+        },
+
+        {
+            "label": "Format Project",
+            "type": "shell",
+            "command": "black ."
+        }
+    ]
+}

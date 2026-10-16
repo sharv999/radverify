@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "schema_version": 1,
+    "dataset_id": "pet-radionuclide-physics-source-model",
+    "revision": "2026-07-21-review-1",
+    "description": "Reviewed pre-production PET radionuclide constants for the single-patient source model. Half-lives are source values; patient dose-rate constants are source-backed or explicitly derived and rounded as recorded per radionuclide.",
+    "approval_status": "reviewed_pending_user_approval",
+    "reviewed_by": "OpenAI-assisted independent source verification",
+    "reviewed_date": "2026-07-21",
+    "approved_by": null,
+    "approved_date": null,
+    "approved_records_sha256": null
+  },
+  "records": [
+    {
+      "code": "F18",
+      "display_name": "F-18",
+      "half_life_h": 1.8295,
+      "dose_rate_constant_uSv_h_per_MBq_at_1m": 0.092,
+      "radiation_type": "annihilation_511kev",
+      "tvl_key": "pet_511kev",
+      "half_life_provenance": {
+        "source_title": "IAEA Medical Isotope Browser: 18O(p,n)18F",
+        "source_organisation": "International Atomic Energy Agency",
+        "source_value": "109.77 min",
+        "reference_id": "IAEA NDS medical/o8p18f8.html",
+        "accessed_date": "2026-07-21",
+        "derivation": "109.77 min / 60 = 1.8295 h"
+      },
+      "dose_rate_provenance": {
+        "source_title": "AAPM Task Group 108: PET and PET/CT Shielding Requirements",
+        "source_organisation": "American Association of Physicists in Medicine",
+        "source_value": "0.092 µSv·m²·MBq⁻¹·h⁻¹ patient dose-rate constant at 1 m",
+        "reference_id": "AAPM Report No. 108; Medical Physics 33(1):4-15; DOI 10.1118/1.2135911",
+        "accessed_date": "2026-07-21",
+        "derivation": "Directly adopted patient-source constant including the TG-108 patient self-attenuation convention."
+      }
+    },
+    {
+      "code": "Ga68",
+      "display_name": "Ga-68",
+      "half_life_h": 1.1285,
+      "dose_rate_constant_uSv_h_per_MBq_at_1m": 0.085,
+      "radiation_type": "annihilation_511kev",
+      "tvl_key": "pet_511kev",
+      "half_life_provenance": {
+        "source_title": "MIRD Radionuclide Dosimetric Data Sheet: Gallium-68",
+        "source_organisation": "SNMMI MIRD Committee / MIRDsoft",
+        "source_value": "67.71 min",
+        "reference_id": "MIRDspecs Ga-68 radionuclide data sheet",
+        "accessed_date": "2026-07-21",
+        "derivation": "67.71 min / 60 = 1.1285 h"
+      },
+      "dose_rate_provenance": {
+        "source_title": "AAPM TG-108 F-18 patient constant scaled by annihilation-photon yield",
+        "source_organisation": "Derived from AAPM TG-108 and evaluated decay data",
+        "source_value": "0.085 µSv·m²·MBq⁻¹·h⁻¹ at 1 m",
+        "reference_id": "AAPM Report No. 108; MIRDspecs Ga-68 and F-18 decay data",
+        "accessed_date": "2026-07-21",
+        "derivation": "0.092 × (Ga-68 positron yield / F-18 positron yield), rounded to 0.085. This is a model-derived patient constant, not a direct Ga-68 patient measurement."
+      }
+    }
+  ]
+}

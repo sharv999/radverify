@@ -1,0 +1,87 @@
+{
+  "position": {
+    "height_above_ffl_m": 1.0,
+    "x_from_west_m": 1.5,
+    "y_from_south_m": 3.5
+  },
+  "preview_baseline": "pet-ui-preview-v10-ui-freeze",
+  "production_eligible": false,
+  "request": {
+    "barrier_requests": [
+      {
+        "design_goal_uSv_per_week": 10.0,
+        "distance_m": 2.5,
+        "material_key": "lead",
+        "occupancy_factor": 0.2,
+        "provided_thickness_mm": 10.56,
+        "source_name": "N wall"
+      },
+      {
+        "design_goal_uSv_per_week": 10.0,
+        "distance_m": 2.5,
+        "material_key": "lead",
+        "occupancy_factor": 0.2,
+        "provided_thickness_mm": 14.08,
+        "source_name": "E wall"
+      },
+      {
+        "design_goal_uSv_per_week": 10.0,
+        "distance_m": 3.5,
+        "material_key": "lead",
+        "occupancy_factor": 0.2,
+        "provided_thickness_mm": 17.6,
+        "source_name": "S wall"
+      },
+      {
+        "design_goal_uSv_per_week": 10.0,
+        "distance_m": 1.5,
+        "material_key": "lead",
+        "occupancy_factor": 0.2,
+        "provided_thickness_mm": 3.08,
+        "source_name": "W wall"
+      },
+      {
+        "design_goal_uSv_per_week": 10.0,
+        "distance_m": 1.0,
+        "material_key": "concrete_2350kg_m3",
+        "occupancy_factor": 1.0,
+        "provided_thickness_mm": 150.0,
+        "source_name": "Floor"
+      },
+      {
+        "design_goal_uSv_per_week": 10.0,
+        "distance_m": 2.6,
+        "material_key": "concrete_2350kg_m3",
+        "occupancy_factor": 1.0,
+        "provided_thickness_mm": 150.0,
+        "source_name": "Ceiling"
+      }
+    ],
+    "production_eligible": false,
+    "schema": "radshield_pet_calculation_request_v2",
+    "schema_version": 2,
+    "source": {
+      "exposure_phases": [
+        {
+          "duration_h": 1.0,
+          "name": "Uptake",
+          "activity_retention_factor": 1.0,
+          "start_time_h": 0.0
+        },
+        {
+          "duration_h": 0.5,
+          "name": "Imaging",
+          "activity_retention_factor": 1.0,
+          "start_time_h": 1.0
+        }
+      ],
+      "injected_activity_mbq": 250.0,
+      "patients_per_week": 30.0,
+      "radionuclide": "F18",
+      "residual_activity_factor": 1.0
+    }
+  },
+  "schema": "radshield_pet_ui_preview_state_v2",
+  "schema_version": 2,
+  "single_source_per_room": true
+}

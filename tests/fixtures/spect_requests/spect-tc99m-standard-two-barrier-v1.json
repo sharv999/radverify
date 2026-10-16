@@ -1,0 +1,48 @@
+{
+  "barrier_requests": [
+    {
+      "barrier_id": "N",
+      "barrier_name": "North wall",
+      "design_goal_uSv_per_week": 20.0,
+      "distance_m": 2.0,
+      "material_key": "lead",
+      "occupancy_factor": 1.0,
+      "provided_thickness_mm": 1.0,
+      "source_name": "SPECT Patient Source"
+    },
+    {
+      "barrier_id": "E",
+      "barrier_name": "East wall",
+      "design_goal_uSv_per_week": 20.0,
+      "distance_m": 3.0,
+      "material_key": "concrete_2300kg_m3",
+      "occupancy_factor": 0.25,
+      "provided_thickness_mm": 100.0,
+      "source_name": "SPECT Patient Source"
+    }
+  ],
+  "physics_freeze": {
+    "freeze_id": "spect-physics-step20-2026-08-23",
+    "practical_transmission": {
+      "canonical_payload_sha256": "f1d1715b1b0f5561d7b95294d1fe5201dd697a828dadc4ef8e117e73c5c2aa22",
+      "dataset_id": "spect-tc99m-practical-transmission-oumano-2025-frozen",
+      "records_sha256": "9af69cf321e62435553b89ec4803206e72f648760d73b8176903e8fb2acb38de",
+      "revision": "2026-08-23-step20-1"
+    },
+    "radionuclide_source": {
+      "canonical_payload_sha256": "9d5c566b2de07b131ac00849584edb4cce91c72e111d8c52bac26f46362fb1f5",
+      "dataset_id": "spect-radionuclide-physics-tc99m-source-model",
+      "records_sha256": "2346bc89c2edc201dec6a849adc7149ca74ed82ce9823be962bb994bfe9ed172",
+      "revision": "2026-08-23-step20-1"
+    }
+  },
+  "production_eligible": false,
+  "schema": "radshield_spect_practical_calculation_request_v1",
+  "schema_version": 1,
+  "source": {
+    "administered_activity_mbq": 600.0,
+    "imaging_duration_h": 0.5,
+    "patients_per_week": 20.0,
+    "radionuclide": "Tc99m"
+  }
+}

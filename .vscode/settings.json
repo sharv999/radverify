@@ -1,0 +1,170 @@
+{
+  "workbench.colorTheme": "Light Modern",
+  "workbench.iconTheme": "material-icon-theme",
+
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  },
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "editor.fontFamily": "JetBrains Mono, Cascadia Code, Consolas, monospace",
+  "editor.fontSize": 16,
+  "editor.lineHeight": 24,
+  "editor.fontLigatures": false,
+  "editor.minimap.enabled": false,
+  "editor.renderLineHighlight": "line",
+  "editor.scrollbar.vertical": "visible",
+  "editor.scrollbar.horizontal": "visible",
+  "editor.overviewRulerBorder": true,
+  "editor.guides.indentation": true,
+  "editor.guides.highlightActiveIndentation": true,
+  "editor.lineNumbers": "on",
+  "editor.glyphMargin": false,
+  "editor.folding": false,
+  "editor.wordWrap": "on",
+  "editor.fontWeight": "400",
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.guides.bracketPairs": false,
+  "editor.bracketPairColorization.enabled": false,
+  "editor.matchBrackets": "never",
+  "editor.padding.top": 24,
+  "editor.padding.bottom": 24,
+  "editor.smoothScrolling": true,
+  "editor.semanticHighlighting.enabled": true,
+
+  "workbench.sideBar.location": "left",
+  "workbench.activityBar.location": "default",
+  "workbench.statusBar.visible": true,
+  "workbench.editor.tabSizing": "shrink",
+  "workbench.tree.renderIndentGuides": "none",
+  "workbench.list.smoothScrolling": true,
+
+  "breadcrumbs.enabled": false,
+
+  "blockman.n33A02B1ColorComboPreset": "Classic Light",
+  "blockman.n04Sub01BorderRadius": 8,
+  "blockman.n33A01B1FromDepth0ToInwardForAllBorders": "1px solid #EAEAEA",
+  "blockman.n12A01RightSideBaseOfBlocks": "cl",
+  "blockman.n16A01LineHeight": 1.6,
+  "blockman.n26A01MaxDepth": 6,
+
+  "outline.showVariables": false,
+  "outline.showConstants": false,
+  "outline.showFields": false,
+  "outline.showProperties": false,
+  "outline.showArrays": true,
+  "outline.showObjects": false,
+  "outline.showBooleans": false,
+  "outline.showNumbers": false,
+  "outline.showStrings": false,
+  "outline.icons": false,
+  "outline.problems.enabled": false,
+
+  "breadcrumbs.symbolPath": "off",
+
+  "workbench.colorCustomizations": {
+    "editor.background": "#EFEFEF",
+    "editor.foreground": "#111111",
+
+    "sideBar.background": "#F7F7F8",
+    "sideBar.foreground": "#2D2D2D",
+
+    "titleBar.activeBackground": "#FFFFFF",
+    "titleBar.activeForeground": "#111111",
+
+    "tab.activeBackground": "#FFFFFF",
+    "tab.inactiveBackground": "#F7F7F8",
+    "tab.activeForeground": "#111111",
+    "tab.inactiveForeground": "#8E8EA0",
+
+    "panel.background": "#FFFFFF",
+    "terminal.background": "#FFFFFF",
+
+    "editorCursor.foreground": "#10A37F",
+    "editor.selectionBackground": "#D9D9E3",
+    "editor.inactiveSelectionBackground": "#ECECF1",
+
+    "editor.lineHighlightBackground": "#EFEFEF",
+    "editorIndentGuide.background1": "#DDDDDD",
+    "editorIndentGuide.activeBackground1": "#BBBBBB",
+    "editor.selectionHighlightBackground": "#E2E2E2",
+    "focusBorder": "#00000000",
+    "list.hoverBackground": "#ECECEC",
+  },
+
+  "explorer.compactFolders": false,
+
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": [
+          "keyword.control",
+          "storage.type",
+          "storage.modifier"
+        ],
+        "settings": {
+          "foreground": "#0096B7",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": [
+          "entity.name.function",
+          "meta.function-call.generic.python",
+          "support.function"
+        ],
+        "settings": {
+          "foreground": "#D94C72"
+        }
+      },
+      {
+        "scope": [
+          "entity.name.type.class",
+          "entity.name.class"
+        ],
+        "settings": {
+          "foreground": "#D94C72"
+        }
+      },
+      {
+        "scope": [
+          "variable.parameter",
+          "variable.language.self"
+        ],
+        "settings": {
+          "foreground": "#111111"
+        }
+      },
+      {
+        "scope": [
+          "punctuation.definition",
+          "punctuation.separator",
+          "punctuation.section",
+          "meta.brace"
+        ],
+        "settings": {
+          "foreground": "#8E8EA0"
+        }
+      },
+      {
+        "scope": [
+          "comment",
+          "punctuation.definition.comment"
+        ],
+        "settings": {
+          "foreground": "#9A9A9A",
+          "fontStyle": "italic"
+        }
+      }
+    ]
+  },
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.terminal.activateEnvironment": false,
+  "python-envs.defaultEnvManager": "ms-python.python:system"
+}

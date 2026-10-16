@@ -1,0 +1,22 @@
+{
+  "schema": "radshield_spect_cli_regression_manifest_v1",
+  "schema_version": 1,
+  "production_eligible": false,
+  "physics_freeze_id": "spect-physics-step20-2026-08-23",
+  "fixtures": [
+    {
+      "fixture_id": "spect-tc99m-standard-two-barrier-v1",
+      "request_path": "tests/fixtures/spect_requests/spect-tc99m-standard-two-barrier-v1.json",
+      "expected_materials": ["lead", "concrete_2300kg_m3"],
+      "expected_output_sha256": "c435d732b516b283b30dc2db3991f9c370543a4134ed886b5f3ca013ce112f85",
+      "expected_replay_verified": true
+    },
+    {
+      "fixture_id": "spect-tc99m-low-transmission-caution-v1",
+      "request_path": "tests/fixtures/spect_requests/spect-tc99m-low-transmission-caution-v1.json",
+      "expected_materials": ["lead", "gypsum"],
+      "expected_output_sha256": "0d5c500b60db7c2819bb8469e5a7683f883c383ac9840223d404cdbe8fa518da",
+      "expected_replay_verified": true
+    }
+  ]
+}

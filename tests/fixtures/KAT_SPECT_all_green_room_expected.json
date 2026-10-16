@@ -1,0 +1,107 @@
+{
+  "kat_id": "SPECT-KAT-001",
+  "room": {
+    "name": "SPECT Room 1",
+    "length_m": 6.0,
+    "width_m": 5.0,
+    "height_m": 3.6,
+    "source_from_west_m": 2.5,
+    "source_from_south_m": 3.0
+  },
+  "source": {
+    "radionuclide": "Tc99m",
+    "radiation_type": "tc99m_140kev",
+    "dose_rate_constant_uSv_h_per_MBq_at_1m": 0.0206,
+    "administered_activity_MBq": 740.0,
+    "patients_per_week": 40.0,
+    "imaging_duration_h": 0.5,
+    "decay_integrated_hours": 0.4858490051751217,
+    "weekly_dose_uSv_at_1m": 296.2512893955822
+  },
+  "barriers": {
+    "N wall": {
+      "distance_m": 3.0,
+      "occupancy_factor": 1.0,
+      "design_goal_uSv_per_week": 20.0,
+      "annual_design_dose_uSv_per_year": 1040.0,
+      "unshielded_uSv_per_week": 32.91680993284247,
+      "occupied_unshielded_uSv_per_week": 32.91680993284247,
+      "required_transmission_B": 0.6075922922301522,
+      "required_thickness_mm": 0.1688237105944584,
+      "provided_thickness_mm": 0.88,
+      "provided_transmission": 0.09752534270020069,
+      "transmitted_uSv_per_week": 3.210223169297832,
+      "status": "PASS"
+    },
+    "E wall": {
+      "distance_m": 2.5,
+      "occupancy_factor": 1.0,
+      "design_goal_uSv_per_week": 20.0,
+      "annual_design_dose_uSv_per_year": 1040.0,
+      "unshielded_uSv_per_week": 47.40020630329315,
+      "occupied_unshielded_uSv_per_week": 47.40020630329315,
+      "required_transmission_B": 0.42193909182649464,
+      "required_thickness_mm": 0.30821685214318406,
+      "provided_thickness_mm": 0.88,
+      "provided_transmission": 0.09752534270020069,
+      "transmitted_uSv_per_week": 4.6227213637888775,
+      "status": "PASS"
+    },
+    "S wall": {
+      "distance_m": 3.0,
+      "occupancy_factor": 0.2,
+      "design_goal_uSv_per_week": 20.0,
+      "annual_design_dose_uSv_per_year": 1040.0,
+      "unshielded_uSv_per_week": 32.91680993284247,
+      "occupied_unshielded_uSv_per_week": 6.5833619865684945,
+      "required_transmission_B": 1.0,
+      "required_thickness_mm": 0.0,
+      "provided_thickness_mm": 0.88,
+      "provided_transmission": 0.09752534270020069,
+      "transmitted_uSv_per_week": 0.6420446338595664,
+      "status": "PASS"
+    },
+    "W wall": {
+      "distance_m": 2.5,
+      "occupancy_factor": 0.05,
+      "design_goal_uSv_per_week": 20.0,
+      "annual_design_dose_uSv_per_year": 1040.0,
+      "unshielded_uSv_per_week": 47.40020630329315,
+      "occupied_unshielded_uSv_per_week": 2.3700103151646577,
+      "required_transmission_B": 1.0,
+      "required_thickness_mm": 0.0,
+      "provided_thickness_mm": 0.88,
+      "provided_transmission": 0.09752534270020069,
+      "transmitted_uSv_per_week": 0.23113606818944388,
+      "status": "PASS"
+    },
+    "Floor": {
+      "distance_m": 3.0,
+      "occupancy_factor": 1.0,
+      "design_goal_uSv_per_week": 20.0,
+      "annual_design_dose_uSv_per_year": 1040.0,
+      "unshielded_uSv_per_week": 32.91680993284247,
+      "occupied_unshielded_uSv_per_week": 32.91680993284247,
+      "required_transmission_B": 0.6075922922301522,
+      "required_thickness_mm": 32.87603910306483,
+      "provided_thickness_mm": 150.0,
+      "provided_transmission": 0.05069059667732586,
+      "transmitted_uSv_per_week": 1.6685727362099112,
+      "status": "PASS"
+    },
+    "Ceiling": {
+      "distance_m": 3.0,
+      "occupancy_factor": 1.0,
+      "design_goal_uSv_per_week": 20.0,
+      "annual_design_dose_uSv_per_year": 1040.0,
+      "unshielded_uSv_per_week": 32.91680993284247,
+      "occupied_unshielded_uSv_per_week": 32.91680993284247,
+      "required_transmission_B": 0.6075922922301522,
+      "required_thickness_mm": 32.87603910306483,
+      "provided_thickness_mm": 150.0,
+      "provided_transmission": 0.05069059667732586,
+      "transmitted_uSv_per_week": 1.6685727362099112,
+      "status": "PASS"
+    }
+  }
+}

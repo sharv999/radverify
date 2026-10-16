@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "freeze_id": "spect-physics-step20-2026-08-23",
+  "status": "approved_locked_verified_nonproduction",
+  "production_enabled": false,
+  "notes": [
+    "Step 20 freezes physics inputs only; SPECT remains non-production.",
+    "The narrow-beam NIST attenuation dataset remains a reference-only development dataset and is not used by the practical barrier calculation."
+  ],
+  "datasets": {
+    "radionuclide_source": {
+      "path": "data/spect/spect_radionuclide_physics_approved_frozen.json",
+      "dataset_id": "spect-radionuclide-physics-tc99m-source-model",
+      "revision": "2026-08-23-step20-1",
+      "approval_status": "physics_approved_frozen_nonproduction",
+      "records_sha256": "2346bc89c2edc201dec6a849adc7149ca74ed82ce9823be962bb994bfe9ed172",
+      "role": "active_nonproduction_source_physics",
+      "canonical_payload_sha256": "9d5c566b2de07b131ac00849584edb4cce91c72e111d8c52bac26f46362fb1f5"
+    },
+    "practical_transmission": {
+      "path": "data/spect/spect_tc99m_practical_transmission_approved_frozen.json",
+      "dataset_id": "spect-tc99m-practical-transmission-oumano-2025-frozen",
+      "revision": "2026-08-23-step20-1",
+      "approval_status": "physics_approved_frozen_nonproduction",
+      "records_sha256": "9af69cf321e62435553b89ec4803206e72f648760d73b8176903e8fb2acb38de",
+      "role": "active_nonproduction_practical_shielding_model",
+      "canonical_payload_sha256": "f1d1715b1b0f5561d7b95294d1fe5201dd697a828dadc4ef8e117e73c5c2aa22"
+    },
+    "narrow_beam_reference": {
+      "path": "data/spect/spect_tc99m_attenuation_development.json",
+      "dataset_id": "spect-tc99m-attenuation-nist-xcom-development",
+      "revision": "2026-08-22-step-2",
+      "approval_status": "development_nonproduction",
+      "records_sha256": "406d0c340a353ce2b451388d2daea5a9aa459505bba48796c13f009df82237bf",
+      "role": "reference_only_not_practical_shielding"
+    }
+  }
+}

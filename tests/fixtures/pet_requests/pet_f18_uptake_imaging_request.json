@@ -1,0 +1,43 @@
+{
+  "schema": "radshield_pet_calculation_request_v2",
+  "schema_version": 2,
+  "production_eligible": false,
+  "source": {
+    "radionuclide": "F18",
+    "injected_activity_mbq": 250.0,
+    "patients_per_week": 30.0,
+    "residual_activity_factor": 0.9,
+    "exposure_phases": [
+      {
+        "name": "Uptake room",
+        "start_time_h": 0.0,
+        "duration_h": 1.0,
+        "activity_retention_factor": 1.0
+      },
+      {
+        "name": "PET imaging",
+        "start_time_h": 1.0,
+        "duration_h": 0.5,
+        "activity_retention_factor": 0.85
+      }
+    ]
+  },
+  "barrier_requests": [
+    {
+      "material_key": "lead",
+      "distance_m": 2.0,
+      "occupancy_factor": 1.0,
+      "design_goal_uSv_per_week": 10.0,
+      "provided_thickness_mm": 16.0,
+      "source_name": "F-18 uptake patient"
+    },
+    {
+      "material_key": "concrete_2350kg_m3",
+      "distance_m": 3.5,
+      "occupancy_factor": 0.25,
+      "design_goal_uSv_per_week": 10.0,
+      "provided_thickness_mm": 300.0,
+      "source_name": "F-18 imaging patient"
+    }
+  ]
+}

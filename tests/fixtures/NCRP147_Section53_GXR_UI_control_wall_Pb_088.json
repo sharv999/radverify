@@ -1,0 +1,203 @@
+{
+  "project_name": "NCRP147 Section 5.3 - UI approximation (NOT strict KAT)",
+  "project_type": "new_build",
+  "client": "Physics validation - reference test",
+  "site": "NCRP 147 Section 5.3 representative room",
+  "assessor": "Health Physics Pty Ltd",
+  "date": "2026-10-14",
+  "modality": "X-ray",
+  "notes": "IMPORTANT: Not an exact NCRP 147 Section 5.3 fixture. UI fixed south-facing table source cannot reproduce cross-table lateral primary beam. Published benchmarks: floor 35 mm concrete (d=4.1 m, P=20 uGy/wk, 72 mm pre-shield); ceiling 44 mm concrete (d=2.7 m, P=20); chest wall 0.45 mm Pb (d=2.5 m, T=0.2, 0.85 mm receptor pre-shield); control wall 0.27 mm Pb (d=1.8 m, P=100). Actual model geometry, separate bucky shield and distances may differ. DO NOT mark as NCRP KAT PASS.",
+  "tvl_library_mm_pb": {
+    "xray_80kvp": 0.25,
+    "xray_100kvp": 0.27,
+    "xray_120kvp": 0.3,
+    "xray_140kvp": 0.33,
+    "ct_120kvp": 0.3,
+    "ct_140kvp": 0.33,
+    "tc99m": 0.3,
+    "i131": 3.0
+  },
+  "patient_dose_constants": {},
+  "sources": [
+    {
+      "name": "General Radiography",
+      "source_type": "xray_primary",
+      "radiation_type": "xray_120kvp",
+      "params": {
+        "xray_method": "ncrp_simplified",
+        "workload_uSv_per_week_at_1m": 100000.0,
+        "use_factor": 0.25,
+        "exam_room_type": "general_radiography",
+        "exams_per_week": 125,
+        "tube_potential_kvp": 120,
+        "derived_workload_uSv_per_week_at_1m": "",
+        "derived_use_factor_default": "",
+        "derived_method_note": "",
+        "exposures_per_week": 200,
+        "mAs_per_exposure": 10
+      },
+      "room_name": "X-ray Room 1"
+    }
+  ],
+  "rooms": [
+    {
+      "name": "X-ray Room 1",
+      "modality": "X-ray",
+      "sources": [],
+      "barriers": [
+        {
+          "name": "N wall",
+          "material": "Pb",
+          "thickness_mm": 0.88,
+          "adjacent_area": "Corridor",
+          "barrier_role": "fig52_secondary_wall",
+          "distance_m": 2.8,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 20.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": "",
+          "distance_is_manual": false
+        },
+        {
+          "name": "E wall",
+          "material": "Pb",
+          "thickness_mm": 0.88,
+          "adjacent_area": "Corridor",
+          "barrier_role": "fig52_secondary_wall",
+          "distance_m": 2.3,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 20.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": "",
+          "distance_is_manual": false
+        },
+        {
+          "name": "S wall",
+          "material": "Pb",
+          "thickness_mm": 0.88,
+          "adjacent_area": "Corridor",
+          "barrier_role": "fig52_secondary_wall",
+          "distance_m": 1.2,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 20.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": "",
+          "distance_is_manual": false
+        },
+        {
+          "name": "W wall",
+          "material": "Pb",
+          "thickness_mm": 0.88,
+          "adjacent_area": "Corridor",
+          "barrier_role": "fig52_chest_bucky_wall",
+          "distance_m": 4.2,
+          "occupancy_factor": 0.2,
+          "design_goal_uSv_per_week": 20.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": "",
+          "distance_is_manual": false
+        },
+        {
+          "name": "Floor",
+          "material": "Concrete",
+          "thickness_mm": 150.0,
+          "adjacent_area": "Clinical Area",
+          "barrier_role": "fig52_floor_under_table",
+          "distance_m": 1.0,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 20.0,
+          "material_legacy": "Concrete 150 mm",
+          "notes": "",
+          "distance_is_manual": false
+        },
+        {
+          "name": "Ceiling",
+          "material": "Concrete",
+          "thickness_mm": 150.0,
+          "adjacent_area": "Clinical Area",
+          "barrier_role": "fig52_ceiling",
+          "distance_m": 2.6,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 10.0,
+          "material_legacy": "Concrete 150 mm",
+          "notes": "",
+          "distance_is_manual": false
+        },
+        {
+          "name": "Control wall",
+          "material": "Pb",
+          "thickness_mm": 0.88,
+          "adjacent_area": "Control booth",
+          "barrier_role": "fig52_control_wall",
+          "distance_m": 1.7182840277439582,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 100.0,
+          "material_legacy": "Pb 0.88 mm (10 kg/m2)",
+          "notes": "NCRP 147 5.3.6: 0.27 mm Pb calculated, 0.79 mm Pb specified; dsec 1.8 m, P 100 uGy/wk. UI actual geometry may differ.",
+          "distance_is_manual": false
+        }
+      ],
+      "geometry": {
+        "room_name": "X-ray Room 1",
+        "length_m": 4.0,
+        "width_m": 6.5,
+        "height_m": 3.6,
+        "source": {
+          "label": "General Radiography",
+          "x_m": 4.2,
+          "y_m": 1.2,
+          "rotation_deg": 0
+        },
+        "openings": [
+          {
+            "wall": "N",
+            "opening_type": "door",
+            "offset_m": 1.0,
+            "width_m": 0.9,
+            "label": "",
+            "pb_equiv_mm": 0.88,
+            "material": "Pb",
+            "sill_height_above_ffl_m": 0.0,
+            "head_height_above_ffl_m": 2.1,
+            "kvp_basis": 120.0,
+            "id": ""
+          }
+        ],
+        "wall_bucky": {
+          "wall": "W",
+          "offset_m": 1.2,
+          "width_m": 0.6,
+          "height_m": 1.2,
+          "sill_height_above_ffl_m": 0.9,
+          "head_height_above_ffl_m": 2.1,
+          "material": "Wall bucky / vertical image receptor",
+          "id": "WB1"
+        },
+        "bucky_shield": {
+          "wall": "W",
+          "offset_m": 1.2,
+          "width_m": 1.2,
+          "material": "Pb",
+          "thickness_mm": 2.2,
+          "id": "BS1"
+        },
+        "control_wall": {
+          "center_x_m": 5.2,
+          "center_y_m": 2.9,
+          "length_m": 1.5,
+          "orientation_deg": 0,
+          "nib_length_m": 0.75,
+          "material": "Pb",
+          "thickness_mm": 0.88,
+          "occupancy_factor": 1.0,
+          "design_goal_uSv_per_week": 100.0,
+          "id": "CW1"
+        }
+      },
+      "modality_state": {}
+    }
+  ],
+  "file_role": "working_project",
+  "save_schema": "radshield_working_project_v1",
+  "schema_version": 1
+}
