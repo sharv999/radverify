@@ -1,0 +1,214 @@
+{
+  "schema": "radiation-room-digital-twin-0.1",
+  "twin_id": "RV-EXAMPLE-001",
+  "provenance": {
+    "producer": "RadVerify",
+    "producer_version": "0.2-step2"
+  },
+  "room": {
+    "project_id": "RV-EXAMPLE-001",
+    "site_name": "Example Hospital",
+    "building": "Main Building / Level 1",
+    "level": "",
+    "room_name": "CT Room 1",
+    "room_number": "1.023",
+    "room_type": "CT"
+  },
+  "geometry": {
+    "coordinate_system": {
+      "origin": "south-west floor corner",
+      "x_axis": "west_to_east",
+      "y_axis": "south_to_north",
+      "z_axis": "up_from_finished_floor_level",
+      "units": "m"
+    },
+    "dimensions_m": {
+      "south_north": 5.4,
+      "west_east": 7.2,
+      "height": 2.9
+    },
+    "openings": [
+      {
+        "id": "D1",
+        "wall": "S",
+        "opening_type": "door",
+        "offset_m": 1.3,
+        "width_m": 1.0,
+        "label": "D1",
+        "vertical_extent_m": {
+          "sill": 0.0,
+          "head": 2.1
+        },
+        "physical_specification": {
+          "material": "Lead-lined door",
+          "pb_equivalent_mm": 1.5,
+          "kvp_basis": null
+        }
+      }
+    ],
+    "fixed_features": []
+  },
+  "equipment": [
+    {
+      "id": "primary-source",
+      "role": "primary_radiation_source",
+      "equipment_type": "CT",
+      "label": "CT scanner",
+      "position_m": {
+        "x": 3.6,
+        "y": 2.7
+      },
+      "rotation_deg": 0
+    }
+  ],
+  "barriers": [
+    {
+      "id": "N wall",
+      "barrier_type": "Wall",
+      "geometry_ref": "wall:N",
+      "design_specification": {
+        "construction": "1.5 mm Pb to 2.1 m",
+        "pb_equivalent_mm": 1.5
+      },
+      "as_built": {
+        "construction": "Lead sheet behind plasterboard",
+        "pb_equivalent_mm": 1.5
+      },
+      "verification": {
+        "status": "Pass",
+        "evidence_ref": "IMG_0042",
+        "notes": ""
+      }
+    },
+    {
+      "id": "E wall",
+      "barrier_type": "Wall",
+      "geometry_ref": "wall:E",
+      "design_specification": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "as_built": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "verification": {
+        "status": "Not inspected",
+        "evidence_ref": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "S wall",
+      "barrier_type": "Wall",
+      "geometry_ref": "wall:S",
+      "design_specification": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "as_built": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "verification": {
+        "status": "Not inspected",
+        "evidence_ref": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "W wall",
+      "barrier_type": "Wall",
+      "geometry_ref": "wall:W",
+      "design_specification": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "as_built": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "verification": {
+        "status": "Not inspected",
+        "evidence_ref": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "Floor",
+      "barrier_type": "Slab",
+      "geometry_ref": "surface:floor",
+      "design_specification": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "as_built": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "verification": {
+        "status": "Not inspected",
+        "evidence_ref": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "Ceiling",
+      "barrier_type": "Slab",
+      "geometry_ref": "surface:ceiling",
+      "design_specification": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "as_built": {
+        "construction": "",
+        "pb_equivalent_mm": null
+      },
+      "verification": {
+        "status": "Not inspected",
+        "evidence_ref": "",
+        "notes": ""
+      }
+    },
+    {
+      "id": "D1",
+      "barrier_type": "Door",
+      "geometry_ref": "opening:D1",
+      "design_specification": {
+        "construction": "Lead-lined door",
+        "pb_equivalent_mm": 1.5
+      },
+      "as_built": {
+        "construction": "Lead-lined door",
+        "pb_equivalent_mm": 1.5
+      },
+      "verification": {
+        "status": "Pass",
+        "evidence_ref": "",
+        "notes": ""
+      }
+    }
+  ],
+  "inspection": {
+    "inspector": "Example Inspector",
+    "inspection_date": "2026-10-16",
+    "drawing_reference": "A-401 Rev C",
+    "notes": ""
+  },
+  "measurement_points": [
+    {
+      "point_id": "MP01",
+      "x_m": 3.6,
+      "y_m": 5.1,
+      "height_m": 1.0,
+      "location": "Outside N wall",
+      "instrument": "Survey meter 01",
+      "measurement_type": "Ambient dose rate",
+      "reading_uSv_h": 0.8,
+      "background_uSv_h": 0.1,
+      "corrected_uSv_h": 0.7000000000000001,
+      "status": "Pass",
+      "notes": ""
+    }
+  ]
+}

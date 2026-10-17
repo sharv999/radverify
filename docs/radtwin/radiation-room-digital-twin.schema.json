@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "radiation-room-digital-twin.schema.json",
+  "title": "Radiation Room Digital Twin",
+  "description": "Product-neutral interchange record for a radiation room used by RadShield, RadVerify and RadStatus.",
+  "type": "object",
+  "required": ["schema", "room", "geometry", "equipment", "barriers", "inspection", "measurement_points"],
+  "properties": {
+    "schema": {"const": "radiation-room-digital-twin-0.1"},
+    "twin_id": {"type": "string"},
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "producer": {"type": "string"},
+        "producer_version": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "room": {
+      "type": "object",
+      "required": ["room_name", "room_type"],
+      "properties": {
+        "project_id": {"type": "string"},
+        "site_name": {"type": "string"},
+        "building": {"type": "string"},
+        "level": {"type": "string"},
+        "room_name": {"type": "string"},
+        "room_number": {"type": "string"},
+        "room_type": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "geometry": {
+      "type": "object",
+      "required": ["coordinate_system", "dimensions_m", "openings", "fixed_features"],
+      "properties": {
+        "coordinate_system": {
+          "type": "object",
+          "properties": {
+            "origin": {"const": "south-west floor corner"},
+            "x_axis": {"const": "west_to_east"},
+            "y_axis": {"const": "south_to_north"},
+            "z_axis": {"const": "up_from_finished_floor_level"},
+            "units": {"const": "m"}
+          },
+          "additionalProperties": false
+        },
+        "dimensions_m": {
+          "type": "object",
+          "required": ["south_north", "west_east", "height"],
+          "properties": {
+            "south_north": {"type": "number", "exclusiveMinimum": 0},
+            "west_east": {"type": "number", "exclusiveMinimum": 0},
+            "height": {"type": "number", "exclusiveMinimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "openings": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/opening"}
+        },
+        "fixed_features": {
+          "type": "array",
+          "items": {"type": "object", "required": ["feature_type"], "additionalProperties": true}
+        }
+      },
+      "additionalProperties": true
+    },
+    "equipment": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/equipment"}
+    },
+    "barriers": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/barrier"}
+    },
+    "inspection": {
+      "type": "object",
+      "properties": {
+        "inspector": {"type": "string"},
+        "inspection_date": {"type": "string"},
+        "drawing_reference": {"type": "string"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "measurement_points": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/measurementPoint"}
+    }
+  },
+  "$defs": {
+    "opening": {
+      "type": "object",
+      "required": ["wall", "opening_type", "offset_m", "width_m"],
+      "properties": {
+        "id": {"type": "string"},
+        "wall": {"enum": ["N", "E", "S", "W"]},
+        "opening_type": {"enum": ["door", "viewing_panel", "lead_glass"]},
+        "offset_m": {"type": "number", "minimum": 0},
+        "width_m": {"type": "number", "exclusiveMinimum": 0},
+        "label": {"type": "string"},
+        "vertical_extent_m": {
+          "type": "object",
+          "properties": {
+            "sill": {"type": "number"},
+            "head": {"type": "number"}
+          },
+          "additionalProperties": false
+        },
+        "physical_specification": {
+          "type": "object",
+          "properties": {
+            "material": {"type": "string"},
+            "pb_equivalent_mm": {"type": "number"},
+            "kvp_basis": {"type": ["number", "null"]}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "equipment": {
+      "type": "object",
+      "required": ["id", "role", "position_m"],
+      "properties": {
+        "id": {"type": "string"},
+        "role": {"type": "string"},
+        "equipment_type": {"type": "string"},
+        "label": {"type": "string"},
+        "position_m": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": {"type": "number"},
+            "y": {"type": "number"}
+          },
+          "additionalProperties": true
+        },
+        "rotation_deg": {"type": "number"}
+      },
+      "additionalProperties": true
+    },
+    "barrier": {
+      "type": "object",
+      "required": ["id", "barrier_type", "geometry_ref", "design_specification", "as_built", "verification"],
+      "properties": {
+        "id": {"type": "string"},
+        "barrier_type": {"type": "string"},
+        "geometry_ref": {"type": "string"},
+        "design_specification": {"$ref": "#/$defs/barrierSpecification"},
+        "as_built": {"$ref": "#/$defs/barrierSpecification"},
+        "verification": {
+          "type": "object",
+          "properties": {
+            "status": {"type": "string"},
+            "evidence_ref": {"type": "string"},
+            "notes": {"type": "string"}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "barrierSpecification": {
+      "type": "object",
+      "properties": {
+        "construction": {"type": "string"},
+        "pb_equivalent_mm": {"type": ["number", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "measurementPoint": {
+      "type": "object",
+      "required": ["point_id", "x_m", "y_m"],
+      "properties": {
+        "point_id": {"type": "string"},
+        "x_m": {"type": "number"},
+        "y_m": {"type": "number"},
+        "height_m": {"type": "number"},
+        "location": {"type": "string"},
+        "instrument": {"type": "string"},
+        "measurement_type": {"type": "string"},
+        "reading_uSv_h": {"type": ["number", "null"]},
+        "background_uSv_h": {"type": ["number", "null"]},
+        "corrected_uSv_h": {"type": ["number", "null"]},
+        "status": {"type": "string"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

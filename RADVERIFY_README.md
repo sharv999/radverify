@@ -1,6 +1,6 @@
-# RadVerify — V0.2 Step 1 Field Prototype
+# RadVerify — V0.2 Step 2 Digital Twin Prototype
 
-RadVerify is a field-verification fork of the current RadShield desktop project. V0.2 Step 1 makes the Floor Plan the operational centre of the field workflow.
+RadVerify is a field-verification application built from the RadShield room/floor-plan foundation. V0.2 Step 2 introduces the shared **Radiation Room Digital Twin** interchange contract while retaining the V0.2 Step 1 floor-plan-centred workflow.
 
 ## Run
 
@@ -14,6 +14,16 @@ The original RadShield launcher from the supplied snapshot has been preserved as
 radshield_app_reference.py
 ```
 
+
+## V0.2 Step 2 — Radiation Room Digital Twin
+
+- **Portable room file** — File → Export Radiation Room Digital Twin… writes a neutral `*.radtwin.json` record.
+- **Twin import** — File → Import Radiation Room Digital Twin… reconstructs a new unsaved RadVerify working project from the room twin.
+- **Shared schema** — schema identifier `radiation-room-digital-twin-0.1` is documented and accompanied by a machine-readable JSON Schema and example twin under `docs/radtwin/`.
+- **Stable coordinate convention** — south-west floor corner origin; +x west→east; +y south→north; +z upwards from FFL.
+- **Design vs as-built separation** — every barrier carries distinct design specification, as-built construction and verification state.
+- **RadShield compatibility contract** — `radverify.radtwin.radtwin_to_radshield_geometry()` maps the twin to the existing RadShield `RoomGeometry` JSON shape without invoking shielding physics.
+- **Product separation retained** — native `*.radverify.json` remains the editable RadVerify project file; `*.radtwin.json` is only the shared interchange record.
 
 ## V0.2 Step 1 — Floor Plan workflow centre
 

@@ -6,11 +6,16 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
 from radverify.models import RadVerifyProject
+from radverify.radtwin import (
+    RADTWIN_EXTENSION,
+    project_from_radtwin,
+    project_to_radtwin,
+)
 from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, MeasurementPointsTab
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.2 Step 1 field prototype"
+APP_VERSION = "0.2 Step 2 digital twin prototype"
 PROJECT_EXTENSION = ".radverify.json"
 
 
@@ -67,6 +72,9 @@ class RadVerifyApp(tk.Tk):
         file_menu.add_separator()
         file_menu.add_command(label="Save", command=self.save_project, accelerator="Ctrl+S")
         file_menu.add_command(label="Save As…", command=self.save_project_as)
+        file_menu.add_separator()
+        file_menu.add_command(label="Import Radiation Room Digital Twin…", command=self.import_radtwin)
+        file_menu.add_command(label="Export Radiation Room Digital Twin…", command=self.export_radtwin)
         file_menu.add_separator()
         file_menu.add_command(label="Export RadStatus payload…", command=self.export_radstatus_payload)
         file_menu.add_separator()
@@ -170,6 +178,53 @@ class RadVerifyApp(tk.Tk):
         self._update_title()
         self.set_status(f"Saved {path.name}")
         return True
+
+
+    def import_radtwin(self):
+        if not self._confirm_discard():
+            return
+        filename = filedialog.askopenfilename(
+            title="Import Radiation Room Digital Twin",
+            filetypes=(("Radiation Room Digital Twin", "*.radtwin.json *.json"), ("All files", "*.*")),
+        )
+        if not filename:
+            return
+        try:
+            data = json.loads(Path(filename).read_text(encoding="utf-8"))
+            self.project = project_from_radtwin(data)
+        except Exception as exc:
+            messagebox.showerror("Import digital twin", f"Could not import Radiation Room Digital Twin:\n{exc}")
+            return
+        # A twin is an interchange record rather than a native RadVerify project.
+        # Import it into a new unsaved working project so the original twin is not
+        # silently overwritten by File > Save.
+        self.current_file = None
+        self._dirty = True
+        self.load_project_into_ui()
+        self._dirty = True
+        self._update_title()
+        self.set_status(f"Imported Radiation Room Digital Twin: {Path(filename).name}")
+
+    def export_radtwin(self):
+        self.room_tab.apply_to_model()
+        project_id = self.project.details.project_id or "radiation-room"
+        filename = filedialog.asksaveasfilename(
+            title="Export Radiation Room Digital Twin",
+            defaultextension=RADTWIN_EXTENSION,
+            initialfile=f"{project_id}{RADTWIN_EXTENSION}",
+            filetypes=(("Radiation Room Digital Twin", "*.radtwin.json"), ("JSON", "*.json")),
+        )
+        if not filename:
+            return
+        try:
+            Path(filename).write_text(
+                json.dumps(project_to_radtwin(self.project), indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+        except Exception as exc:
+            messagebox.showerror("Export digital twin", f"Could not export Radiation Room Digital Twin:\n{exc}")
+            return
+        self.set_status(f"Exported Radiation Room Digital Twin: {Path(filename).name}")
 
     def export_radstatus_payload(self):
         filename = filedialog.asksaveasfilename(title="Export RadStatus payload", defaultextension=".json", initialfile=f"{self.project.details.project_id or 'radverify'}_radstatus.json", filetypes=(("JSON", "*.json"),))
