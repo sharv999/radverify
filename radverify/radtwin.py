@@ -18,13 +18,13 @@ from geometry.geometry_model import (
     RoomGeometry,
     WallBucky,
 )
-from radverify.models import BARRIER_IDS, BarrierInspection, MeasurementPoint, RadVerifyProject, RoomDetails
+from radverify.models import BARRIER_IDS, BarrierInspection, EvidenceItem, MeasurementPoint, RadVerifyProject, RoomDetails
 
 
 RADTWIN_SCHEMA = "radiation-room-digital-twin-0.1"
 RADTWIN_EXTENSION = ".radtwin.json"
 RADTWIN_PRODUCER = "RadVerify"
-RADTWIN_PRODUCER_VERSION = "0.2-step2"
+RADTWIN_PRODUCER_VERSION = "0.3-step2"
 
 
 class RadTwinValidationError(ValueError):
@@ -154,6 +154,7 @@ def _barrier_to_twin(barrier: BarrierInspection) -> Dict[str, Any]:
         "verification": {
             "status": barrier.status,
             "evidence_ref": barrier.evidence_ref,
+            "evidence": [asdict(item) for item in barrier.evidence_items],
             "notes": barrier.notes,
         },
     }
@@ -339,6 +340,14 @@ def project_from_radtwin(data: Dict[str, Any]) -> RadVerifyProject:
         barrier.observed_pb_mm = _as_float(as_built.get("pb_equivalent_mm"))
         barrier.status = str(verification.get("status", "Not inspected") or "Not inspected")
         barrier.evidence_ref = str(verification.get("evidence_ref", "") or "")
+        evidence_items = []
+        for item in verification.get("evidence", []) or []:
+            if not isinstance(item, dict):
+                continue
+            cleaned = {k: v for k, v in item.items() if k in EvidenceItem.__dataclass_fields__}
+            if cleaned.get("evidence_id"):
+                evidence_items.append(EvidenceItem(**cleaned))
+        barrier.evidence_items = evidence_items
         barrier.notes = str(verification.get("notes", "") or "")
 
     measurements: list[MeasurementPoint] = []

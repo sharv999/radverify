@@ -1,4 +1,4 @@
-# RadVerify — V0.3 Step 1 Design vs As-Built Verification Prototype
+# RadVerify — V0.3 Step 2 Evidence Capture Prototype
 
 RadVerify is a field-verification application built from the RadShield room/floor-plan foundation. V0.2 Step 2 introduces the shared **Radiation Room Digital Twin** interchange contract while retaining the V0.2 Step 1 floor-plan-centred workflow.
 
@@ -14,6 +14,16 @@ The original RadShield launcher from the supplied snapshot has been preserved as
 radshield_app_reference.py
 ```
 
+
+
+## V0.3 Step 2 — Evidence capture
+
+- **Multiple evidence records per barrier/opening** — photos, drawings, documents, measurements and non-file references can be linked directly to the selected inspection item.
+- **Field metadata** — each evidence item carries an ID, type, reference, inspection date, inspector and description.
+- **Linked files** — RadVerify stores the source file path and can reopen the linked file from the inspection workspace. Files are referenced rather than embedded in the JSON at this prototype stage.
+- **Integrity fingerprint** — attached files receive a SHA-256 hash at capture/edit time; the UI can re-check whether the linked file is unchanged, missing or modified.
+- **Digital Twin persistence** — structured evidence travels in `barriers[*].verification.evidence` while the existing `evidence_ref` remains as a backwards-compatible primary reference.
+- **RadStatus hand-off** — structured evidence metadata is also included in the draft RadStatus payload.
 
 
 ## V0.3 Step 1 — Design vs As-Built Barrier Inspection
@@ -66,5 +76,5 @@ Each saved project also contains a draft `radstatus_payload`, and the File menu 
 - No shielding calculation is performed by RadVerify.
 - No RadShield physics code is modified or invoked by the field-verification workflow.
 - No report/PDF generation yet.
-- No photos/attachments database yet; `evidence_ref` is text in V0.1.
+- Evidence files are linked rather than embedded or copied into a managed evidence package; packaging is a later step.
 - RadStatus interface is a draft JSON payload only; no live API connection yet.

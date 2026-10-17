@@ -38,7 +38,7 @@ A barrier carries two deliberately separate records:
 - `design_specification`: intended/required construction
 - `as_built`: observed or otherwise verified construction
 
-`verification` records the inspection outcome, evidence reference and notes.
+`verification` records the inspection outcome, primary evidence reference, structured evidence records and notes. Each evidence record can carry type, human reference, linked file path, inspection date, inspector, description and SHA-256 file hash. Linked files are referenced rather than embedded in schema 0.1.
 No consuming application should silently replace design intent with as-built
 construction or vice versa.
 

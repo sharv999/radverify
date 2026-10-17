@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+import subprocess
+import sys
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from typing import Callable
 
 from geometry.geometry_canvas import GeometryCanvas, DESIGN_FIELD_WIDTH_M, DESIGN_FIELD_HEIGHT_M, CANVAS_MARGIN_PX
 from geometry.geometry_model import Opening
 from config.ui_constants import COLOUR_PASS, COLOUR_REVIEW_DARK, COLOUR_FAIL, COLOUR_TEXT
-from radverify.models import RadVerifyProject, BarrierInspection, MeasurementPoint, STATUS_OPTIONS
+from radverify.models import RadVerifyProject, BarrierInspection, EvidenceItem, MeasurementPoint, STATUS_OPTIONS
 
 
 ROOM_TYPES = ("CT", "General X-ray", "PET/CT", "SPECT/CT", "Nuclear Medicine", "Other")
@@ -806,6 +810,15 @@ class BarrierInspectionTab(ttk.Frame):
 
         return "Matches design" if not differences else "Differs: " + ", ".join(differences)
 
+    @staticmethod
+    def evidence_summary(barrier: BarrierInspection) -> str:
+        count = len(barrier.evidence_items)
+        if count:
+            suffix = "item" if count == 1 else "items"
+            primary = barrier.evidence_ref.strip()
+            return f"{count} {suffix}" + (f" — {primary}" if primary else "")
+        return barrier.evidence_ref
+
     def _build(self):
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
@@ -824,7 +837,7 @@ class BarrierInspectionTab(ttk.Frame):
             "barrier_id": "Barrier", "type": "Type", "design": "Design construction",
             "design_pb": "Design Pb mm", "as_built": "As-built construction",
             "as_built_pb": "As-built Pb mm", "difference": "Comparison", "status": "Status",
-            "evidence": "Evidence ref",
+            "evidence": "Evidence",
         }
         widths = {
             "barrier_id": 105, "type": 90, "design": 180, "design_pb": 95, "as_built": 190,
@@ -899,13 +912,61 @@ class BarrierInspectionTab(ttk.Frame):
             verification, textvariable=self.status_var, values=STATUS_OPTIONS, state="readonly"
         )
         self.status_combo.grid(row=0, column=1, sticky="ew", pady=4)
-        ttk.Label(verification, text="Evidence ref").grid(row=1, column=0, sticky="w", padx=(0, 8), pady=4)
+        ttk.Label(verification, text="Primary evidence ref").grid(row=1, column=0, sticky="w", padx=(0, 8), pady=4)
         self.evidence_entry = ttk.Entry(verification, textvariable=self.evidence_var)
         self.evidence_entry.grid(row=1, column=1, sticky="ew", pady=4)
         ttk.Label(verification, text="Notes").grid(row=2, column=0, sticky="nw", padx=(0, 8), pady=4)
         self.notes_text = tk.Text(verification, height=4, width=28, wrap="word")
         self.notes_text.grid(row=2, column=1, sticky="nsew", pady=4)
         verification.rowconfigure(2, weight=1)
+
+        evidence = ttk.LabelFrame(editor, text="EVIDENCE — linked to selected barrier", padding=9)
+        evidence.grid(row=2, column=0, columnspan=3, sticky="nsew", pady=(9, 0))
+        evidence.columnconfigure(0, weight=1)
+        evidence.rowconfigure(1, weight=1)
+        ttk.Label(
+            evidence,
+            text="Attach photos/documents or record non-file evidence. Files are linked, not embedded; a SHA-256 hash is recorded when a file is attached.",
+            wraplength=1050,
+            justify="left",
+        ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 6))
+        evidence_columns = ("id", "type", "reference", "file", "date", "inspector", "integrity", "description")
+        self.evidence_tree = ttk.Treeview(evidence, columns=evidence_columns, show="headings", selectmode="browse", height=5)
+        evidence_headings = {
+            "id": "ID", "type": "Type", "reference": "Reference", "file": "Linked file",
+            "date": "Date", "inspector": "Inspector", "integrity": "Integrity", "description": "Description",
+        }
+        evidence_widths = {
+            "id": 90, "type": 85, "reference": 130, "file": 190, "date": 90, "inspector": 110,
+            "integrity": 100, "description": 260,
+        }
+        for col in evidence_columns:
+            self.evidence_tree.heading(col, text=evidence_headings[col])
+            self.evidence_tree.column(col, width=evidence_widths[col], minwidth=65, stretch=col in {"file", "description"})
+        self.evidence_tree.grid(row=1, column=0, sticky="nsew")
+        evidence_scroll = ttk.Scrollbar(evidence, orient="vertical", command=self.evidence_tree.yview)
+        evidence_scroll.grid(row=1, column=1, sticky="ns")
+        self.evidence_tree.configure(yscrollcommand=evidence_scroll.set)
+        self.evidence_tree.bind("<<TreeviewSelect>>", self._evidence_selection_changed)
+        self.evidence_tree.bind("<Double-1>", lambda _e: self.edit_selected_evidence())
+
+        evidence_buttons = ttk.Frame(evidence)
+        evidence_buttons.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(6, 0))
+        self.add_evidence_file_button = ttk.Button(evidence_buttons, text="Attach file…", command=self.add_evidence_file)
+        self.add_evidence_file_button.pack(side="left", padx=(0, 4))
+        self.add_evidence_reference_button = ttk.Button(evidence_buttons, text="Add reference…", command=self.add_evidence_reference)
+        self.add_evidence_reference_button.pack(side="left", padx=4)
+        self.edit_evidence_button = ttk.Button(evidence_buttons, text="Edit…", command=self.edit_selected_evidence)
+        self.edit_evidence_button.pack(side="left", padx=4)
+        self.remove_evidence_button = ttk.Button(evidence_buttons, text="Remove", command=self.remove_selected_evidence)
+        self.remove_evidence_button.pack(side="left", padx=4)
+        self.open_evidence_button = ttk.Button(evidence_buttons, text="Open file", command=self.open_selected_evidence)
+        self.open_evidence_button.pack(side="left", padx=4)
+        self.verify_evidence_button = ttk.Button(evidence_buttons, text="Verify hash", command=self.verify_selected_evidence)
+        self.verify_evidence_button.pack(side="left", padx=4)
+        self.evidence_status_var = tk.StringVar(value="")
+        ttk.Label(evidence_buttons, textvariable=self.evidence_status_var).pack(side="right", padx=(10, 0))
+        editor.rowconfigure(2, weight=1)
 
         buttons = ttk.Frame(self)
         buttons.grid(row=2, column=0, sticky="ew", pady=(8, 0))
@@ -924,6 +985,13 @@ class BarrierInspectionTab(ttk.Frame):
             widget.configure(state=state)
         self.status_combo.configure(state="readonly" if enabled else "disabled")
         self.notes_text.configure(state=state)
+        for widget in (
+            self.add_evidence_file_button, self.add_evidence_reference_button, self.edit_evidence_button,
+            self.remove_evidence_button, self.open_evidence_button, self.verify_evidence_button,
+        ):
+            widget.configure(state=state)
+        if not enabled:
+            self.evidence_status_var.set("")
 
     def _selected_barrier_id(self):
         b = self._selected()
@@ -947,7 +1015,7 @@ class BarrierInspectionTab(ttk.Frame):
                     "" if b.observed_pb_mm is None else f"{b.observed_pb_mm:g}",
                     self.comparison_summary(b),
                     b.status,
-                    b.evidence_ref,
+                    self.evidence_summary(b),
                 ))
                 if b.barrier_id == preserve_id:
                     selected_iid = iid
@@ -994,6 +1062,7 @@ class BarrierInspectionTab(ttk.Frame):
                 self.notes_text.configure(state="normal")
                 self.notes_text.delete("1.0", "end")
                 self.notes_text.configure(state="disabled")
+                self._refresh_evidence(None)
                 self._set_editor_enabled(False)
                 return
             self._set_editor_enabled(True)
@@ -1007,8 +1076,256 @@ class BarrierInspectionTab(ttk.Frame):
             self.comparison_var.set(self.comparison_summary(barrier))
             self.notes_text.delete("1.0", "end")
             self.notes_text.insert("1.0", barrier.notes)
+            self._refresh_evidence(barrier)
         finally:
             self._editor_loading = False
+
+    def _refresh_evidence(self, barrier: BarrierInspection | None):
+        if not hasattr(self, "evidence_tree"):
+            return
+        self.evidence_tree.delete(*self.evidence_tree.get_children())
+        self.evidence_status_var.set("")
+        if barrier is None:
+            return
+        for idx, item in enumerate(barrier.evidence_items):
+            file_name = Path(item.file_path).name if item.file_path else ""
+            integrity = item.integrity_status()
+            self.evidence_tree.insert("", "end", iid=str(idx), values=(
+                item.evidence_id,
+                item.evidence_type,
+                item.reference,
+                file_name,
+                item.inspection_date,
+                item.inspector,
+                integrity,
+                item.description,
+            ))
+
+    def _selected_evidence(self) -> EvidenceItem | None:
+        barrier = self._find_barrier(self._editor_barrier_id)
+        if barrier is None:
+            return None
+        sel = self.evidence_tree.selection()
+        if not sel:
+            return None
+        try:
+            idx = int(sel[0])
+        except (TypeError, ValueError):
+            return None
+        if idx < 0 or idx >= len(barrier.evidence_items):
+            return None
+        return barrier.evidence_items[idx]
+
+    def _next_evidence_id(self, barrier: BarrierInspection) -> str:
+        stem = "".join(ch if ch.isalnum() else "-" for ch in barrier.barrier_id.upper()).strip("-") or "BARRIER"
+        used = {item.evidence_id for item in barrier.evidence_items}
+        number = 1
+        while True:
+            candidate = f"{stem}-EV{number:02d}"
+            if candidate not in used:
+                return candidate
+            number += 1
+
+    def add_evidence_item(self, barrier_id: str, item: EvidenceItem) -> bool:
+        barrier = self._find_barrier(barrier_id)
+        if barrier is None:
+            return False
+        if not item.evidence_id:
+            item.evidence_id = self._next_evidence_id(barrier)
+        if any(existing.evidence_id == item.evidence_id for existing in barrier.evidence_items):
+            raise ValueError(f"Evidence ID already exists for {barrier_id}: {item.evidence_id}")
+        barrier.evidence_items.append(item)
+        if not barrier.evidence_ref:
+            barrier.evidence_ref = item.reference or (Path(item.file_path).name if item.file_path else item.evidence_id)
+        self.evidence_var.set(barrier.evidence_ref)
+        self.refresh(select_id=barrier_id)
+        self.app.mark_dirty()
+        self.app.set_status(f"Added evidence {item.evidence_id} to {barrier_id}")
+        return True
+
+    def _evidence_dialog(self, *, title: str, item: EvidenceItem) -> EvidenceItem | None:
+        win = tk.Toplevel(self)
+        win.title(title)
+        win.transient(self.winfo_toplevel())
+        win.grab_set()
+        win.columnconfigure(1, weight=1)
+
+        type_var = tk.StringVar(value=item.evidence_type or "Photo")
+        ref_var = tk.StringVar(value=item.reference)
+        path_var = tk.StringVar(value=item.file_path)
+        date_var = tk.StringVar(value=item.inspection_date or self.app.project.details.inspection_date)
+        inspector_var = tk.StringVar(value=item.inspector or self.app.project.details.inspector)
+
+        fields = [
+            ("Type", type_var, "combo"),
+            ("Reference", ref_var, "entry"),
+            ("Linked file", path_var, "entry"),
+            ("Inspection date", date_var, "entry"),
+            ("Inspector", inspector_var, "entry"),
+        ]
+        for row, (label, var, kind) in enumerate(fields):
+            ttk.Label(win, text=label).grid(row=row, column=0, sticky="w", padx=(12, 8), pady=5)
+            if kind == "combo":
+                widget = ttk.Combobox(win, textvariable=var, values=("Photo", "Drawing", "Document", "Measurement", "Other"), state="readonly")
+            else:
+                widget = ttk.Entry(win, textvariable=var, width=55)
+            widget.grid(row=row, column=1, sticky="ew", padx=(0, 12), pady=5)
+
+        ttk.Label(win, text="Description").grid(row=5, column=0, sticky="nw", padx=(12, 8), pady=5)
+        description = tk.Text(win, height=5, width=55, wrap="word")
+        description.grid(row=5, column=1, sticky="nsew", padx=(0, 12), pady=5)
+        description.insert("1.0", item.description)
+        win.rowconfigure(5, weight=1)
+
+        result = {"ok": False}
+
+        def save():
+            item.evidence_type = type_var.get().strip() or "Other"
+            item.reference = ref_var.get().strip()
+            item.file_path = path_var.get().strip()
+            item.inspection_date = date_var.get().strip()
+            item.inspector = inspector_var.get().strip()
+            item.description = description.get("1.0", "end-1c").strip()
+            if item.file_path:
+                try:
+                    item.refresh_hash()
+                except OSError as exc:
+                    messagebox.showerror("Evidence", f"Could not read the linked file:\n{exc}", parent=win)
+                    return
+            else:
+                item.sha256 = ""
+            if not item.reference and not item.file_path:
+                messagebox.showerror("Evidence", "Enter a reference or select a linked file.", parent=win)
+                return
+            result["ok"] = True
+            win.destroy()
+
+        buttons = ttk.Frame(win)
+        buttons.grid(row=6, column=0, columnspan=2, sticky="e", padx=12, pady=(8, 12))
+        ttk.Button(buttons, text="Cancel", command=win.destroy).pack(side="right", padx=(6, 0))
+        ttk.Button(buttons, text="Save", command=save).pack(side="right")
+        win.protocol("WM_DELETE_WINDOW", win.destroy)
+        self.wait_window(win)
+        return item if result["ok"] else None
+
+    def add_evidence_file(self):
+        barrier = self._find_barrier(self._editor_barrier_id)
+        if barrier is None:
+            return
+        filename = filedialog.askopenfilename(
+            title=f"Attach evidence to {barrier.barrier_id}",
+            filetypes=(("Evidence files", "*.jpg *.jpeg *.png *.tif *.tiff *.bmp *.pdf *.doc *.docx *.xls *.xlsx"), ("All files", "*.*")),
+        )
+        if not filename:
+            return
+        item = EvidenceItem(
+            evidence_id=self._next_evidence_id(barrier),
+            evidence_type="Photo" if Path(filename).suffix.lower() in {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp"} else "Document",
+            reference=Path(filename).name,
+            file_path=str(Path(filename)),
+            inspection_date=self.app.project.details.inspection_date,
+            inspector=self.app.project.details.inspector,
+        )
+        edited = self._evidence_dialog(title="Attach evidence file", item=item)
+        if edited is not None:
+            self.add_evidence_item(barrier.barrier_id, edited)
+
+    def add_evidence_reference(self):
+        barrier = self._find_barrier(self._editor_barrier_id)
+        if barrier is None:
+            return
+        item = EvidenceItem(
+            evidence_id=self._next_evidence_id(barrier),
+            evidence_type="Other",
+            inspection_date=self.app.project.details.inspection_date,
+            inspector=self.app.project.details.inspector,
+        )
+        edited = self._evidence_dialog(title="Add evidence reference", item=item)
+        if edited is not None:
+            self.add_evidence_item(barrier.barrier_id, edited)
+
+    def edit_selected_evidence(self):
+        barrier = self._find_barrier(self._editor_barrier_id)
+        item = self._selected_evidence()
+        if barrier is None or item is None:
+            return
+        edited = EvidenceItem(**{name: getattr(item, name) for name in EvidenceItem.__dataclass_fields__})
+        edited = self._evidence_dialog(title=f"Edit evidence {item.evidence_id}", item=edited)
+        if edited is None:
+            return
+        item.evidence_type = edited.evidence_type
+        item.reference = edited.reference
+        item.file_path = edited.file_path
+        item.sha256 = edited.sha256
+        item.inspection_date = edited.inspection_date
+        item.inspector = edited.inspector
+        item.description = edited.description
+        if barrier.evidence_ref == "" or barrier.evidence_ref == item.evidence_id:
+            barrier.evidence_ref = item.reference or (Path(item.file_path).name if item.file_path else item.evidence_id)
+        self.evidence_var.set(barrier.evidence_ref)
+        self.refresh(select_id=barrier.barrier_id)
+        self.app.mark_dirty()
+        self.app.set_status(f"Updated evidence {item.evidence_id}")
+
+    def remove_selected_evidence(self):
+        barrier = self._find_barrier(self._editor_barrier_id)
+        item = self._selected_evidence()
+        if barrier is None or item is None:
+            return
+        if not messagebox.askyesno("Remove evidence", f"Remove {item.evidence_id} from {barrier.barrier_id}?\n\nThe linked source file will not be deleted.", parent=self):
+            return
+        barrier.evidence_items = [existing for existing in barrier.evidence_items if existing.evidence_id != item.evidence_id]
+        if barrier.evidence_ref in {item.reference, item.evidence_id, Path(item.file_path).name if item.file_path else ""}:
+            if barrier.evidence_items:
+                first = barrier.evidence_items[0]
+                barrier.evidence_ref = first.reference or (Path(first.file_path).name if first.file_path else first.evidence_id)
+            else:
+                barrier.evidence_ref = ""
+        self.evidence_var.set(barrier.evidence_ref)
+        self.refresh(select_id=barrier.barrier_id)
+        self.app.mark_dirty()
+        self.app.set_status(f"Removed evidence {item.evidence_id}")
+
+    @staticmethod
+    def _open_file_path(path: Path):
+        if sys.platform.startswith("win"):
+            os.startfile(str(path))  # type: ignore[attr-defined]
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(path)])
+        else:
+            subprocess.Popen(["xdg-open", str(path)])
+
+    def open_selected_evidence(self):
+        item = self._selected_evidence()
+        if item is None or not item.file_path:
+            messagebox.showinfo("Evidence", "The selected evidence record has no linked file.", parent=self)
+            return
+        path = Path(item.file_path)
+        if not path.exists():
+            messagebox.showerror("Evidence", f"Linked evidence file not found:\n{path}", parent=self)
+            return
+        try:
+            self._open_file_path(path)
+        except OSError as exc:
+            messagebox.showerror("Evidence", f"Could not open linked evidence file:\n{exc}", parent=self)
+
+    def verify_selected_evidence(self):
+        item = self._selected_evidence()
+        if item is None:
+            return
+        status = item.integrity_status()
+        self.evidence_status_var.set(f"{item.evidence_id}: {status}")
+        barrier = self._find_barrier(self._editor_barrier_id)
+        if barrier is not None:
+            self._refresh_evidence(barrier)
+        self.app.set_status(f"Evidence integrity {item.evidence_id}: {status}")
+
+    def _evidence_selection_changed(self, _event=None):
+        item = self._selected_evidence()
+        if item is None:
+            self.evidence_status_var.set("")
+            return
+        self.evidence_status_var.set(f"{item.evidence_id}: {item.integrity_status()}")
 
     def _tree_selection_changed(self, _event=None):
         if self._suppress_floor_sync:

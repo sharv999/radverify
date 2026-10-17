@@ -15,7 +15,7 @@ from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, M
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.3 Step 1 design vs as-built verification prototype"
+APP_VERSION = "0.3 Step 2 evidence capture prototype"
 PROJECT_EXTENSION = ".radverify.json"
 
 

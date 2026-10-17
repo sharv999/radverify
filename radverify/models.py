@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from datetime import date
+import hashlib
+from pathlib import Path
 from typing import Any, Dict, List
 
 from geometry.geometry_model import Opening, RadiationSourceGeometry, RoomGeometry
@@ -25,6 +27,50 @@ class RoomDetails:
     notes: str = ""
 
 
+
+
+@dataclass
+class EvidenceItem:
+    evidence_id: str
+    evidence_type: str = "Photo"
+    reference: str = ""
+    file_path: str = ""
+    sha256: str = ""
+    inspection_date: str = ""
+    inspector: str = ""
+    description: str = ""
+
+    @staticmethod
+    def calculate_sha256(file_path: str) -> str:
+        path = Path(file_path)
+        digest = hashlib.sha256()
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+
+    def refresh_hash(self) -> str:
+        if not self.file_path:
+            self.sha256 = ""
+            return self.sha256
+        self.sha256 = self.calculate_sha256(self.file_path)
+        return self.sha256
+
+    def integrity_status(self) -> str:
+        if not self.file_path:
+            return "Reference only"
+        path = Path(self.file_path)
+        if not path.exists():
+            return "File missing"
+        if not self.sha256:
+            return "Hash not recorded"
+        try:
+            current = self.calculate_sha256(self.file_path)
+        except OSError:
+            return "File unreadable"
+        return "Verified" if current == self.sha256 else "File changed"
+
+
 @dataclass
 class BarrierInspection:
     barrier_id: str
@@ -35,6 +81,7 @@ class BarrierInspection:
     observed_pb_mm: float | None = None
     status: str = "Not inspected"
     evidence_ref: str = ""
+    evidence_items: List[EvidenceItem] = field(default_factory=list)
     notes: str = ""
 
     def risk_state(self) -> str:
@@ -148,6 +195,7 @@ class RadVerifyProject:
                     "observed_construction": b.observed_construction,
                     "observed_pb_mm": b.observed_pb_mm,
                     "evidence_ref": b.evidence_ref,
+                    "evidence": [asdict(item) for item in b.evidence_items],
                     "notes": b.notes,
                 }
                 for b in self.barriers
@@ -161,9 +209,17 @@ class RadVerifyProject:
         geom = RoomGeometry.from_dict(data.get("geometry") or {})
         barriers = []
         for raw in data.get("barrier_inspection", data.get("barriers", [])) or []:
-            cleaned = {k: v for k, v in raw.items() if k in BarrierInspection.__dataclass_fields__}
+            cleaned = {k: v for k, v in raw.items() if k in BarrierInspection.__dataclass_fields__ and k != "evidence_items"}
+            evidence_raw = raw.get("evidence_items", raw.get("evidence", [])) or []
+            evidence_items = []
+            for item in evidence_raw:
+                if not isinstance(item, dict):
+                    continue
+                item_cleaned = {k: v for k, v in item.items() if k in EvidenceItem.__dataclass_fields__}
+                if item_cleaned.get("evidence_id"):
+                    evidence_items.append(EvidenceItem(**item_cleaned))
             if cleaned.get("barrier_id"):
-                barriers.append(BarrierInspection(**cleaned))
+                barriers.append(BarrierInspection(**cleaned, evidence_items=evidence_items))
         measurements = []
         for raw in data.get("measurement_points", data.get("measurements", [])) or []:
             cleaned = {k: v for k, v in raw.items() if k in MeasurementPoint.__dataclass_fields__}
