@@ -762,41 +762,168 @@ class FloorPlanTab(ttk.Frame):
 
 
 class BarrierInspectionTab(ttk.Frame):
-    COLUMNS = ("barrier_id", "type", "expected", "observed", "pb", "status", "evidence", "notes")
+    """Design-vs-as-built barrier verification workspace.
+
+    RadShield design values are displayed as immutable reference data.  The
+    field inspector edits only the as-built and verification layers, preserving
+    design intent for the Radiation Room Digital Twin lifecycle.
+    """
+
+    COLUMNS = (
+        "barrier_id", "type", "design", "design_pb", "as_built", "as_built_pb",
+        "difference", "status", "evidence",
+    )
 
     def __init__(self, master, app):
         super().__init__(master, padding=10)
         self.app = app
         self._suppress_floor_sync = False
+        self._editor_loading = False
+        self._editor_barrier_id: str | None = None
         self._build()
+
+    @staticmethod
+    def comparison_summary(barrier: BarrierInspection) -> str:
+        if barrier.status.strip().lower() == "not inspected" and not barrier.observed_construction and barrier.observed_pb_mm is None:
+            return "Not inspected"
+        has_design = bool(barrier.expected_construction.strip()) or barrier.expected_pb_mm is not None
+        has_as_built = bool(barrier.observed_construction.strip()) or barrier.observed_pb_mm is not None
+        if not has_design:
+            return "No design specification"
+        if not has_as_built:
+            return "As-built not recorded"
+
+        differences = []
+        if barrier.expected_construction.strip() and barrier.observed_construction.strip():
+            if barrier.expected_construction.strip().casefold() != barrier.observed_construction.strip().casefold():
+                differences.append("construction")
+        if barrier.expected_pb_mm is not None and barrier.observed_pb_mm is not None:
+            delta = barrier.observed_pb_mm - barrier.expected_pb_mm
+            if abs(delta) > 1e-9:
+                differences.append(f"Pb {delta:+g} mm")
+        elif barrier.expected_pb_mm is not None or barrier.observed_pb_mm is not None:
+            differences.append("Pb")
+
+        return "Matches design" if not differences else "Differs: " + ", ".join(differences)
 
     def _build(self):
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
-        ttk.Label(self, text="Barrier Inspection", style="Title.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
-        self.tree = ttk.Treeview(self, columns=self.COLUMNS, show="headings", selectmode="browse")
+        ttk.Label(self, text="Barrier Inspection — Design vs As-Built", style="Title.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
+
+        body = ttk.Panedwindow(self, orient="vertical")
+        body.grid(row=1, column=0, sticky="nsew")
+
+        table_frame = ttk.Frame(body)
+        table_frame.rowconfigure(0, weight=1)
+        table_frame.columnconfigure(0, weight=1)
+        self.tree = ttk.Treeview(table_frame, columns=self.COLUMNS, show="headings", selectmode="browse", height=11)
         headings = {
-            "barrier_id": "Barrier", "type": "Type", "expected": "Expected construction",
-            "observed": "Observed construction", "pb": "Observed Pb mm", "status": "Status",
-            "evidence": "Evidence ref", "notes": "Notes",
+            "barrier_id": "Barrier", "type": "Type", "design": "Design construction",
+            "design_pb": "Design Pb mm", "as_built": "As-built construction",
+            "as_built_pb": "As-built Pb mm", "difference": "Comparison", "status": "Status",
+            "evidence": "Evidence ref",
         }
-        widths = {"barrier_id":120, "type":90, "expected":180, "observed":210, "pb":95, "status":95, "evidence":120, "notes":230}
+        widths = {
+            "barrier_id": 105, "type": 90, "design": 180, "design_pb": 95, "as_built": 190,
+            "as_built_pb": 100, "difference": 155, "status": 95, "evidence": 125,
+        }
         for c in self.COLUMNS:
             self.tree.heading(c, text=headings[c])
-            self.tree.column(c, width=widths[c], minwidth=70, stretch=c in {"expected", "observed", "notes"})
-        self.tree.grid(row=1, column=0, sticky="nsew")
-        sb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        sb.grid(row=1, column=1, sticky="ns")
+            self.tree.column(c, width=widths[c], minwidth=70, stretch=c in {"design", "as_built", "difference"})
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        sb = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
+        sb.grid(row=0, column=1, sticky="ns")
         self.tree.configure(yscrollcommand=sb.set)
         self.tree.bind("<Double-1>", lambda _e: self.edit_selected())
         self.tree.bind("<<TreeviewSelect>>", self._tree_selection_changed)
+        body.add(table_frame, weight=3)
+
+        editor = ttk.Frame(body, padding=(0, 8, 0, 0))
+        editor.columnconfigure(0, weight=1)
+        editor.columnconfigure(1, weight=1)
+        editor.columnconfigure(2, weight=1)
+        body.add(editor, weight=2)
+
+        self.editor_title_var = tk.StringVar(value="Select a barrier to inspect")
+        ttk.Label(editor, textvariable=self.editor_title_var, style="Section.TLabel").grid(
+            row=0, column=0, columnspan=3, sticky="w", pady=(0, 6)
+        )
+
+        # DESIGN is reference-only.  The readonly state is intentional: a field
+        # verification must never overwrite the originating RadShield design.
+        design = ttk.LabelFrame(editor, text="DESIGN — read only", padding=9)
+        design.grid(row=1, column=0, sticky="nsew", padx=(0, 5))
+        design.columnconfigure(1, weight=1)
+        self.design_construction_var = tk.StringVar()
+        self.design_pb_var = tk.StringVar()
+        ttk.Label(design, text="Construction").grid(row=0, column=0, sticky="w", padx=(0, 8), pady=4)
+        self.design_construction_entry = ttk.Entry(design, textvariable=self.design_construction_var, state="readonly")
+        self.design_construction_entry.grid(row=0, column=1, sticky="ew", pady=4)
+        ttk.Label(design, text="Pb equivalent (mm)").grid(row=1, column=0, sticky="w", padx=(0, 8), pady=4)
+        self.design_pb_entry = ttk.Entry(design, textvariable=self.design_pb_var, state="readonly")
+        self.design_pb_entry.grid(row=1, column=1, sticky="ew", pady=4)
+        ttk.Label(
+            design,
+            text="Imported design intent is preserved and cannot be edited in RadVerify.",
+            wraplength=310,
+            justify="left",
+        ).grid(row=2, column=0, columnspan=2, sticky="w", pady=(8, 0))
+
+        asbuilt = ttk.LabelFrame(editor, text="AS-BUILT — field observation", padding=9)
+        asbuilt.grid(row=1, column=1, sticky="nsew", padx=5)
+        asbuilt.columnconfigure(1, weight=1)
+        self.asbuilt_construction_var = tk.StringVar()
+        self.asbuilt_pb_var = tk.StringVar()
+        ttk.Label(asbuilt, text="Construction").grid(row=0, column=0, sticky="w", padx=(0, 8), pady=4)
+        self.asbuilt_construction_entry = ttk.Entry(asbuilt, textvariable=self.asbuilt_construction_var)
+        self.asbuilt_construction_entry.grid(row=0, column=1, sticky="ew", pady=4)
+        ttk.Label(asbuilt, text="Pb equivalent (mm)").grid(row=1, column=0, sticky="w", padx=(0, 8), pady=4)
+        self.asbuilt_pb_entry = ttk.Entry(asbuilt, textvariable=self.asbuilt_pb_var)
+        self.asbuilt_pb_entry.grid(row=1, column=1, sticky="ew", pady=4)
+        self.comparison_var = tk.StringVar(value="")
+        ttk.Label(asbuilt, text="Comparison").grid(row=2, column=0, sticky="nw", padx=(0, 8), pady=(8, 4))
+        ttk.Label(asbuilt, textvariable=self.comparison_var, style="Section.TLabel", wraplength=230).grid(
+            row=2, column=1, sticky="w", pady=(8, 4)
+        )
+
+        verification = ttk.LabelFrame(editor, text="VERIFICATION", padding=9)
+        verification.grid(row=1, column=2, sticky="nsew", padx=(5, 0))
+        verification.columnconfigure(1, weight=1)
+        self.status_var = tk.StringVar(value="Not inspected")
+        self.evidence_var = tk.StringVar()
+        ttk.Label(verification, text="Status").grid(row=0, column=0, sticky="w", padx=(0, 8), pady=4)
+        self.status_combo = ttk.Combobox(
+            verification, textvariable=self.status_var, values=STATUS_OPTIONS, state="readonly"
+        )
+        self.status_combo.grid(row=0, column=1, sticky="ew", pady=4)
+        ttk.Label(verification, text="Evidence ref").grid(row=1, column=0, sticky="w", padx=(0, 8), pady=4)
+        self.evidence_entry = ttk.Entry(verification, textvariable=self.evidence_var)
+        self.evidence_entry.grid(row=1, column=1, sticky="ew", pady=4)
+        ttk.Label(verification, text="Notes").grid(row=2, column=0, sticky="nw", padx=(0, 8), pady=4)
+        self.notes_text = tk.Text(verification, height=4, width=28, wrap="word")
+        self.notes_text.grid(row=2, column=1, sticky="nsew", pady=4)
+        verification.rowconfigure(2, weight=1)
+
         buttons = ttk.Frame(self)
-        buttons.grid(row=2, column=0, sticky="w", pady=8)
-        ttk.Button(buttons, text="Edit selected", command=self.edit_selected).pack(side="left", padx=(0, 6))
+        buttons.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+        ttk.Button(buttons, text="Save as-built / verification", command=self.save_selected).pack(side="left", padx=(0, 8))
         ttk.Button(buttons, text="Mark Pass", command=lambda: self.set_status("Pass")).pack(side="left", padx=3)
         ttk.Button(buttons, text="Mark Review", command=lambda: self.set_status("Review")).pack(side="left", padx=3)
         ttk.Button(buttons, text="Mark Fail", command=lambda: self.set_status("Fail")).pack(side="left", padx=3)
-        ttk.Button(buttons, text="Show on Floor Plan", command=self.show_selected_on_floor_plan).pack(side="left", padx=(14, 3))
+        ttk.Button(buttons, text="Mark Not inspected", command=lambda: self.set_status("Not inspected")).pack(side="left", padx=3)
+        ttk.Button(buttons, text="Show on Floor Plan", command=self.show_selected_on_floor_plan).pack(side="right")
+
+        self._set_editor_enabled(False)
+
+    def _set_editor_enabled(self, enabled: bool):
+        state = "normal" if enabled else "disabled"
+        for widget in (self.asbuilt_construction_entry, self.asbuilt_pb_entry, self.evidence_entry):
+            widget.configure(state=state)
+        self.status_combo.configure(state="readonly" if enabled else "disabled")
+        self.notes_text.configure(state=state)
 
     def _selected_barrier_id(self):
         b = self._selected()
@@ -804,7 +931,7 @@ class BarrierInspectionTab(ttk.Frame):
 
     def refresh(self, select_id: str | None = None):
         self.app.project.sync_opening_inspections()
-        preserve_id = select_id or self._selected_barrier_id()
+        preserve_id = select_id or self._selected_barrier_id() or self._editor_barrier_id
         self._suppress_floor_sync = True
         try:
             self.tree.delete(*self.tree.get_children())
@@ -812,8 +939,15 @@ class BarrierInspectionTab(ttk.Frame):
             for idx, b in enumerate(self.app.project.barriers):
                 iid = str(idx)
                 self.tree.insert("", "end", iid=iid, values=(
-                    b.barrier_id, b.barrier_type, b.expected_construction, b.observed_construction,
-                    "" if b.observed_pb_mm is None else f"{b.observed_pb_mm:g}", b.status, b.evidence_ref, b.notes,
+                    b.barrier_id,
+                    b.barrier_type,
+                    b.expected_construction,
+                    "" if b.expected_pb_mm is None else f"{b.expected_pb_mm:g}",
+                    b.observed_construction,
+                    "" if b.observed_pb_mm is None else f"{b.observed_pb_mm:g}",
+                    self.comparison_summary(b),
+                    b.status,
+                    b.evidence_ref,
                 ))
                 if b.barrier_id == preserve_id:
                     selected_iid = iid
@@ -823,6 +957,7 @@ class BarrierInspectionTab(ttk.Frame):
                 self.tree.see(selected_iid)
         finally:
             self._suppress_floor_sync = False
+        self._load_editor(self._find_barrier(preserve_id) if preserve_id else None)
 
     def _selected(self):
         sel = self.tree.selection()
@@ -836,16 +971,50 @@ class BarrierInspectionTab(ttk.Frame):
             return None
         return self.app.project.barriers[idx]
 
-    def _find_barrier(self, barrier_id: str):
+    def _find_barrier(self, barrier_id: str | None):
+        if not barrier_id:
+            return None
         for barrier in self.app.project.barriers:
             if barrier.barrier_id == barrier_id:
                 return barrier
         return None
 
+    def _load_editor(self, barrier: BarrierInspection | None):
+        self._editor_loading = True
+        try:
+            self._editor_barrier_id = barrier.barrier_id if barrier else None
+            if barrier is None:
+                self.editor_title_var.set("Select a barrier to inspect")
+                for var in (
+                    self.design_construction_var, self.design_pb_var, self.asbuilt_construction_var,
+                    self.asbuilt_pb_var, self.evidence_var, self.comparison_var,
+                ):
+                    var.set("")
+                self.status_var.set("Not inspected")
+                self.notes_text.configure(state="normal")
+                self.notes_text.delete("1.0", "end")
+                self.notes_text.configure(state="disabled")
+                self._set_editor_enabled(False)
+                return
+            self._set_editor_enabled(True)
+            self.editor_title_var.set(f"{barrier.barrier_id} — {barrier.barrier_type}")
+            self.design_construction_var.set(barrier.expected_construction or "—")
+            self.design_pb_var.set("—" if barrier.expected_pb_mm is None else f"{barrier.expected_pb_mm:g}")
+            self.asbuilt_construction_var.set(barrier.observed_construction)
+            self.asbuilt_pb_var.set("" if barrier.observed_pb_mm is None else f"{barrier.observed_pb_mm:g}")
+            self.status_var.set(barrier.status)
+            self.evidence_var.set(barrier.evidence_ref)
+            self.comparison_var.set(self.comparison_summary(barrier))
+            self.notes_text.delete("1.0", "end")
+            self.notes_text.insert("1.0", barrier.notes)
+        finally:
+            self._editor_loading = False
+
     def _tree_selection_changed(self, _event=None):
         if self._suppress_floor_sync:
             return
         barrier = self._selected()
+        self._load_editor(barrier)
         if barrier is not None and hasattr(self.app, "floor_tab"):
             self.app.floor_tab.set_selected_barrier(barrier.barrier_id, sync_table=False)
 
@@ -856,6 +1025,7 @@ class BarrierInspectionTab(ttk.Frame):
                 self.tree.selection_remove(iid)
         finally:
             self._suppress_floor_sync = False
+        self._load_editor(None)
         if sync_floor and hasattr(self.app, "floor_tab"):
             self.app.floor_tab.set_selected_barrier(None, sync_table=False)
 
@@ -882,10 +1052,13 @@ class BarrierInspectionTab(ttk.Frame):
             self.tree.see(match_iid)
         finally:
             self._suppress_floor_sync = False
+        barrier = self._find_barrier(barrier_id)
+        self._load_editor(barrier)
         if sync_floor and hasattr(self.app, "floor_tab"):
             self.app.floor_tab.set_selected_barrier(barrier_id, sync_table=False)
         if focus_tab:
             self.app.notebook.select(self)
+            self.after_idle(self.asbuilt_construction_entry.focus_set)
         return True
 
     def show_selected_on_floor_plan(self):
@@ -895,6 +1068,31 @@ class BarrierInspectionTab(ttk.Frame):
         self.app.floor_tab.set_selected_barrier(barrier.barrier_id, sync_table=False)
         self.app.notebook.select(self.app.floor_tab)
         self.app.set_status(f"Selected barrier {barrier.barrier_id} on Floor Plan")
+
+    def save_selected(self):
+        barrier = self._find_barrier(self._editor_barrier_id)
+        if barrier is None:
+            return False
+        try:
+            observed_pb = _float_or_none(self.asbuilt_pb_var.get())
+        except ValueError:
+            messagebox.showerror("Barrier", "As-built Pb equivalence must be numeric or blank.", parent=self)
+            return False
+
+        # Deliberately do not assign expected_* here.  Those fields are the
+        # immutable design layer imported from RadShield/the Digital Twin.
+        barrier.observed_construction = self.asbuilt_construction_var.get().strip()
+        barrier.observed_pb_mm = observed_pb
+        barrier.status = self.status_var.get()
+        barrier.evidence_ref = self.evidence_var.get().strip()
+        barrier.notes = self.notes_text.get("1.0", "end-1c").strip()
+        self.comparison_var.set(self.comparison_summary(barrier))
+        self.refresh(select_id=barrier.barrier_id)
+        self.app.mark_dirty()
+        if hasattr(self.app, "floor_tab"):
+            self.app.floor_tab.set_selected_barrier(barrier.barrier_id, sync_table=False, redraw=True)
+        self.app.set_status(f"Saved as-built verification: {barrier.barrier_id}")
+        return True
 
     def set_status_for_id(self, barrier_id: str, status: str):
         barrier = self._find_barrier(barrier_id)
@@ -907,59 +1105,20 @@ class BarrierInspectionTab(ttk.Frame):
         return True
 
     def set_status(self, status):
-        barrier = self._selected()
+        barrier = self._selected() or self._find_barrier(self._editor_barrier_id)
         if barrier is None:
             return
         self.set_status_for_id(barrier.barrier_id, status)
 
     def edit_barrier(self, barrier_id: str):
-        if not self.select_barrier(barrier_id, sync_floor=True):
-            return
-        self.edit_selected()
+        if self.select_barrier(barrier_id, focus_tab=True, sync_floor=True):
+            self.app.set_status(f"Inspecting barrier {barrier_id}: design is read-only; record as-built findings")
 
     def edit_selected(self):
-        b = self._selected()
-        if not b:
+        barrier = self._selected()
+        if barrier is None:
             return
-        win = tk.Toplevel(self)
-        win.title(f"Barrier Inspection — {b.barrier_id}")
-        win.transient(self.winfo_toplevel())
-        win.grab_set()
-        vars_ = {
-            "expected_construction": tk.StringVar(value=b.expected_construction),
-            "observed_construction": tk.StringVar(value=b.observed_construction),
-            "expected_pb_mm": tk.StringVar(value="" if b.expected_pb_mm is None else str(b.expected_pb_mm)),
-            "observed_pb_mm": tk.StringVar(value="" if b.observed_pb_mm is None else str(b.observed_pb_mm)),
-            "status": tk.StringVar(value=b.status),
-            "evidence_ref": tk.StringVar(value=b.evidence_ref),
-        }
-        row = 0
-        ttk.Label(win, text=b.barrier_id, style="Title.TLabel").grid(row=row, column=0, columnspan=2, sticky="w", padx=12, pady=(12,8)); row += 1
-        for label, key in (("Expected construction", "expected_construction"), ("Observed construction", "observed_construction"), ("Expected Pb (mm)", "expected_pb_mm"), ("Observed Pb (mm)", "observed_pb_mm"), ("Evidence / photo ref", "evidence_ref")):
-            ttk.Label(win, text=label).grid(row=row, column=0, sticky="w", padx=12, pady=4)
-            ttk.Entry(win, textvariable=vars_[key], width=42).grid(row=row, column=1, sticky="ew", padx=12, pady=4); row += 1
-        ttk.Label(win, text="Status").grid(row=row, column=0, sticky="w", padx=12, pady=4)
-        ttk.Combobox(win, textvariable=vars_["status"], values=STATUS_OPTIONS, state="readonly", width=39).grid(row=row, column=1, sticky="ew", padx=12, pady=4); row += 1
-        ttk.Label(win, text="Notes").grid(row=row, column=0, sticky="nw", padx=12, pady=4)
-        notes = tk.Text(win, height=6, width=42); notes.insert("1.0", b.notes); notes.grid(row=row, column=1, sticky="ew", padx=12, pady=4); row += 1
-
-        def save():
-            try:
-                b.expected_pb_mm = _float_or_none(vars_["expected_pb_mm"].get())
-                b.observed_pb_mm = _float_or_none(vars_["observed_pb_mm"].get())
-            except ValueError:
-                messagebox.showerror("Barrier", "Pb equivalence must be numeric or blank.", parent=win); return
-            b.expected_construction = vars_["expected_construction"].get().strip()
-            b.observed_construction = vars_["observed_construction"].get().strip()
-            b.status = vars_["status"].get()
-            b.evidence_ref = vars_["evidence_ref"].get().strip()
-            b.notes = notes.get("1.0", "end-1c").strip()
-            win.destroy()
-            self.refresh(select_id=b.barrier_id)
-            self.app.mark_dirty()
-            self.app.floor_tab.set_selected_barrier(b.barrier_id, sync_table=False, redraw=True)
-            self.app.set_status(f"Updated barrier inspection: {b.barrier_id}")
-        ttk.Button(win, text="Save", command=save).grid(row=row, column=1, sticky="e", padx=12, pady=12)
+        self.select_barrier(barrier.barrier_id, focus_tab=True, sync_floor=True)
 
 
 class MeasurementPointsTab(ttk.Frame):

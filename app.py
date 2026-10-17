@@ -15,7 +15,7 @@ from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, M
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.2 Step 2 digital twin prototype"
+APP_VERSION = "0.3 Step 1 design vs as-built verification prototype"
 PROJECT_EXTENSION = ".radverify.json"
 
 
@@ -51,8 +51,13 @@ class RadVerifyApp(tk.Tk):
         self._build_menu()
         shell = ttk.Frame(self)
         shell.pack(fill="both", expand=True)
+
+        topbar = ttk.Frame(shell)
+        topbar.pack(fill="x", padx=8, pady=(8, 0))
+        ttk.Button(topbar, text="Quit", command=self.on_close).pack(side="right")
+
         self.notebook = ttk.Notebook(shell)
-        self.notebook.pack(fill="both", expand=True, padx=8, pady=(8, 0))
+        self.notebook.pack(fill="both", expand=True, padx=8, pady=(4, 0))
         self.room_tab = RoomDetailsTab(self.notebook, self)
         self.floor_tab = FloorPlanTab(self.notebook, self)
         self.barrier_tab = BarrierInspectionTab(self.notebook, self)

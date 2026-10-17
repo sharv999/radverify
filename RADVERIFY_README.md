@@ -1,4 +1,4 @@
-# RadVerify — V0.2 Step 2 Digital Twin Prototype
+# RadVerify — V0.3 Step 1 Design vs As-Built Verification Prototype
 
 RadVerify is a field-verification application built from the RadShield room/floor-plan foundation. V0.2 Step 2 introduces the shared **Radiation Room Digital Twin** interchange contract while retaining the V0.2 Step 1 floor-plan-centred workflow.
 
@@ -14,6 +14,16 @@ The original RadShield launcher from the supplied snapshot has been preserved as
 radshield_app_reference.py
 ```
 
+
+
+## V0.3 Step 1 — Design vs As-Built Barrier Inspection
+
+- **Design is immutable reference data** — RadShield/Digital Twin design construction and Pb equivalence are shown read-only in RadVerify.
+- **As-built is a separate field layer** — observed construction and Pb equivalence are entered independently without overwriting design intent.
+- **Three-part inspection workspace** — selected barrier shows DESIGN, AS-BUILT and VERIFICATION panels together.
+- **Difference visibility** — the barrier table and detail editor show whether the field observation matches or differs from the design, including Pb thickness delta when available.
+- **Floor-plan workflow retained** — Open inspection from the Floor Plan now takes the user directly to the selected barrier in the Design vs As-Built workspace.
+- **Interchange contract unchanged** — the existing `radiation-room-digital-twin-0.1` design/as-built/verification layers remain the persistence boundary.
 
 ## V0.2 Step 2 — Radiation Room Digital Twin
 
