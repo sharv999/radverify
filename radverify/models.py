@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
-from datetime import date
+from datetime import date, datetime
 import hashlib
 from pathlib import Path
 from typing import Any, Dict, List
@@ -96,14 +96,17 @@ class BarrierInspection:
 
 
 @dataclass
-class MeasurementPoint:
-    point_id: str
-    x_m: float
-    y_m: float
-    height_m: float = 1.0
-    location: str = ""
+class MeasurementRecord:
+    record_id: str
+    measured_at: str = ""
     instrument: str = ""
+    instrument_id: str = ""
+    serial_number: str = ""
+    calibration_date: str = ""
+    calibration_due_date: str = ""
+    calibration_reference: str = ""
     measurement_type: str = "Ambient dose rate"
+    field_conditions: str = ""
     reading_uSv_h: float | None = None
     background_uSv_h: float | None = None
     corrected_uSv_h: float | None = None
@@ -116,6 +119,102 @@ class MeasurementPoint:
             return
         background = self.background_uSv_h or 0.0
         self.corrected_uSv_h = max(0.0, self.reading_uSv_h - background)
+
+    def calibration_status(self, reference_date: str | None = None) -> str:
+        if not self.calibration_due_date:
+            return "Not recorded"
+        try:
+            due = date.fromisoformat(self.calibration_due_date[:10])
+            reference = date.fromisoformat((reference_date or self.measured_at or date.today().isoformat())[:10])
+        except (TypeError, ValueError):
+            return "Invalid date"
+        return "Current" if reference <= due else "Expired"
+
+
+@dataclass
+class MeasurementPoint:
+    point_id: str
+    x_m: float
+    y_m: float
+    height_m: float = 1.0
+    location: str = ""
+    instrument: str = ""
+    instrument_id: str = ""
+    serial_number: str = ""
+    calibration_date: str = ""
+    calibration_due_date: str = ""
+    calibration_reference: str = ""
+    measurement_type: str = "Ambient dose rate"
+    field_conditions: str = ""
+    measured_at: str = ""
+    reading_uSv_h: float | None = None
+    background_uSv_h: float | None = None
+    corrected_uSv_h: float | None = None
+    status: str = "Not assessed"
+    notes: str = ""
+    measurement_history: List[MeasurementRecord] = field(default_factory=list)
+
+    def recalculate(self) -> None:
+        if self.reading_uSv_h is None:
+            self.corrected_uSv_h = None
+            return
+        background = self.background_uSv_h or 0.0
+        self.corrected_uSv_h = max(0.0, self.reading_uSv_h - background)
+
+    def next_record_id(self) -> str:
+        used = {record.record_id for record in self.measurement_history}
+        i = 1
+        while f"{self.point_id}-M{i:02d}" in used:
+            i += 1
+        return f"{self.point_id}-M{i:02d}"
+
+    def calibration_status(self, reference_date: str | None = None) -> str:
+        record = MeasurementRecord(
+            record_id="_status",
+            measured_at=reference_date or self.measured_at,
+            calibration_due_date=self.calibration_due_date,
+        )
+        return record.calibration_status(reference_date=reference_date)
+
+    def add_measurement_record(self, record: MeasurementRecord) -> None:
+        if not record.record_id:
+            record.record_id = self.next_record_id()
+        if not record.measured_at:
+            record.measured_at = datetime.now().isoformat(timespec="minutes")
+        record.recalculate()
+        self.measurement_history.append(record)
+        self.apply_record_as_latest(record)
+
+    def apply_record_as_latest(self, record: MeasurementRecord) -> None:
+        self.measured_at = record.measured_at
+        self.instrument = record.instrument
+        self.instrument_id = record.instrument_id
+        self.serial_number = record.serial_number
+        self.calibration_date = record.calibration_date
+        self.calibration_due_date = record.calibration_due_date
+        self.calibration_reference = record.calibration_reference
+        self.measurement_type = record.measurement_type
+        self.field_conditions = record.field_conditions
+        self.reading_uSv_h = record.reading_uSv_h
+        self.background_uSv_h = record.background_uSv_h
+        self.corrected_uSv_h = record.corrected_uSv_h
+        self.status = record.status
+        self.notes = record.notes
+
+    def latest_record(self) -> MeasurementRecord | None:
+        return self.measurement_history[-1] if self.measurement_history else None
+
+    def sync_latest_from_history(self) -> None:
+        latest = self.latest_record()
+        if latest is not None:
+            self.apply_record_as_latest(latest)
+            return
+        self.measured_at = ""
+        self.reading_uSv_h = None
+        self.background_uSv_h = None
+        self.corrected_uSv_h = None
+        self.status = "Not assessed"
+        self.notes = ""
 
 
 @dataclass
@@ -222,10 +321,27 @@ class RadVerifyProject:
                 barriers.append(BarrierInspection(**cleaned, evidence_items=evidence_items))
         measurements = []
         for raw in data.get("measurement_points", data.get("measurements", [])) or []:
-            cleaned = {k: v for k, v in raw.items() if k in MeasurementPoint.__dataclass_fields__}
+            if not isinstance(raw, dict):
+                continue
+            cleaned = {
+                k: v
+                for k, v in raw.items()
+                if k in MeasurementPoint.__dataclass_fields__ and k != "measurement_history"
+            }
+            history = []
+            for item in raw.get("measurement_history", raw.get("history", [])) or []:
+                if not isinstance(item, dict):
+                    continue
+                item_cleaned = {k: v for k, v in item.items() if k in MeasurementRecord.__dataclass_fields__}
+                if item_cleaned.get("record_id"):
+                    record = MeasurementRecord(**item_cleaned)
+                    record.recalculate()
+                    history.append(record)
             if cleaned.get("point_id"):
-                mp = MeasurementPoint(**cleaned)
+                mp = MeasurementPoint(**cleaned, measurement_history=history)
                 mp.recalculate()
+                if history:
+                    mp.apply_record_as_latest(history[-1])
                 measurements.append(mp)
         project = cls(
             schema_version=str(data.get("schema_version", "radverify-0.1")),

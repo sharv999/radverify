@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from pathlib import Path
 import subprocess
 import sys
@@ -11,7 +12,7 @@ from typing import Callable
 from geometry.geometry_canvas import GeometryCanvas, DESIGN_FIELD_WIDTH_M, DESIGN_FIELD_HEIGHT_M, CANVAS_MARGIN_PX
 from geometry.geometry_model import Opening
 from config.ui_constants import COLOUR_PASS, COLOUR_REVIEW_DARK, COLOUR_FAIL, COLOUR_TEXT
-from radverify.models import RadVerifyProject, BarrierInspection, EvidenceItem, MeasurementPoint, STATUS_OPTIONS
+from radverify.models import RadVerifyProject, BarrierInspection, EvidenceItem, MeasurementPoint, MeasurementRecord, STATUS_OPTIONS
 
 
 ROOM_TYPES = ("CT", "General X-ray", "PET/CT", "SPECT/CT", "Nuclear Medicine", "Other")
@@ -1439,7 +1440,12 @@ class BarrierInspectionTab(ttk.Frame):
 
 
 class MeasurementPointsTab(ttk.Frame):
-    COLUMNS = ("id", "x", "y", "h", "location", "instrument", "reading", "background", "corrected", "status", "notes")
+    """Spatial survey workflow with instrument traceability and measurement history."""
+
+    COLUMNS = (
+        "id", "x", "y", "h", "location", "instrument", "calibration",
+        "measured", "reading", "background", "corrected", "status", "history",
+    )
 
     def __init__(self, master, app):
         super().__init__(master, padding=10)
@@ -1448,34 +1454,60 @@ class MeasurementPointsTab(ttk.Frame):
         self._build()
 
     def _build(self):
-        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
         self.columnconfigure(0, weight=1)
-        ttk.Label(self, text="Measurement Points", style="Title.TLabel").grid(row=0, column=0, sticky="w", pady=(0,8))
+        ttk.Label(self, text="Measurement Points", style="Title.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(
+            self,
+            text="Place points spatially on the Floor Plan, then record traceable survey measurements against each location.",
+        ).grid(row=1, column=0, sticky="w", pady=(2, 8))
+
         self.tree = ttk.Treeview(self, columns=self.COLUMNS, show="headings", selectmode="browse")
-        labels = ("Point", "X m", "Y m", "Height m", "Location", "Instrument", "Reading µSv/h", "BG µSv/h", "Corrected µSv/h", "Status", "Notes")
-        widths = (70, 65, 65, 75, 150, 140, 100, 85, 110, 90, 220)
+        labels = (
+            "Point", "X m", "Y m", "Height m", "Location", "Instrument", "Calibration",
+            "Latest", "Gross µSv/h", "BG µSv/h", "Corrected µSv/h", "Status", "History",
+        )
+        widths = (70, 60, 60, 70, 145, 160, 90, 120, 95, 80, 110, 90, 65)
         for c, label, width in zip(self.COLUMNS, labels, widths):
             self.tree.heading(c, text=label)
-            self.tree.column(c, width=width, minwidth=55, stretch=c in {"location", "instrument", "notes"})
-        self.tree.grid(row=1, column=0, sticky="nsew")
+            self.tree.column(c, width=width, minwidth=50, stretch=c in {"location", "instrument"})
+        self.tree.grid(row=2, column=0, sticky="nsew")
         sb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        sb.grid(row=1, column=1, sticky="ns")
+        sb.grid(row=2, column=1, sticky="ns")
         self.tree.configure(yscrollcommand=sb.set)
-        self.tree.bind("<Double-1>", lambda _e: self.edit_selected())
+        self.tree.bind("<Double-1>", lambda _e: self.view_history())
         self.tree.bind("<<TreeviewSelect>>", self._tree_selection_changed)
+
         buttons = ttk.Frame(self)
-        buttons.grid(row=2, column=0, sticky="w", pady=8)
-        ttk.Button(buttons, text="Add point", command=self.add_point_dialog).pack(side="left", padx=(0,6))
-        ttk.Button(buttons, text="Edit selected", command=self.edit_selected).pack(side="left", padx=3)
-        ttk.Button(buttons, text="Delete selected", command=self.delete_selected).pack(side="left", padx=3)
-        ttk.Button(buttons, text="Show on Floor Plan", command=self.show_selected_on_floor_plan).pack(side="left", padx=(14, 3))
-        ttk.Label(buttons, text="Tip: use Floor Plan → Place measurement point on plan for rapid field entry.").pack(side="left", padx=(18,0))
+        buttons.grid(row=3, column=0, sticky="ew", pady=8)
+        ttk.Button(buttons, text="Add point", command=self.add_point_dialog).pack(side="left", padx=(0, 6))
+        ttk.Button(buttons, text="Edit point / instrument", command=self.edit_selected).pack(side="left", padx=3)
+        ttk.Button(buttons, text="Record measurement…", command=self.record_selected).pack(side="left", padx=(12, 3))
+        ttk.Button(buttons, text="Measurement history…", command=self.view_history).pack(side="left", padx=3)
+        ttk.Button(buttons, text="Delete point", command=self.delete_selected).pack(side="left", padx=(12, 3))
+        ttk.Button(buttons, text="Show on Floor Plan", command=self.show_selected_on_floor_plan).pack(side="left", padx=(12, 3))
+        ttk.Label(buttons, text="Tip: Floor Plan → Place measurement point is fastest in the field.").pack(side="right", padx=(18, 0))
+
+    @staticmethod
+    def _fmt(value):
+        return "" if value is None else f"{value:g}"
+
+    @staticmethod
+    def _instrument_summary(mp: MeasurementPoint) -> str:
+        parts = [part for part in (mp.instrument, mp.instrument_id, mp.serial_number) if str(part).strip()]
+        return " / ".join(parts)
 
     def _selected_point_id(self):
         idx = self._selected_index()
         if idx is None or idx >= len(self.app.project.measurements):
             return None
         return self.app.project.measurements[idx].point_id
+
+    def _point_by_id(self, point_id: str | None) -> MeasurementPoint | None:
+        for point in self.app.project.measurements:
+            if point.point_id == point_id:
+                return point
+        return None
 
     def refresh(self, select_id: str | None = None):
         preserve_id = select_id or self._selected_point_id()
@@ -1485,12 +1517,22 @@ class MeasurementPointsTab(ttk.Frame):
             selected_iid = None
             for idx, m in enumerate(self.app.project.measurements):
                 m.recalculate()
-                fmt = lambda v: "" if v is None else f"{v:g}"
+                calibration_reference_date = m.measured_at or self.app.project.details.inspection_date
                 iid = str(idx)
                 self.tree.insert("", "end", iid=iid, values=(
-                    m.point_id, f"{m.x_m:.2f}", f"{m.y_m:.2f}", f"{m.height_m:.2f}",
-                    m.location, m.instrument, fmt(m.reading_uSv_h), fmt(m.background_uSv_h),
-                    fmt(m.corrected_uSv_h), m.status, m.notes,
+                    m.point_id,
+                    f"{m.x_m:.2f}",
+                    f"{m.y_m:.2f}",
+                    f"{m.height_m:.2f}",
+                    m.location,
+                    self._instrument_summary(m),
+                    m.calibration_status(calibration_reference_date),
+                    m.measured_at,
+                    self._fmt(m.reading_uSv_h),
+                    self._fmt(m.background_uSv_h),
+                    self._fmt(m.corrected_uSv_h),
+                    m.status,
+                    len(m.measurement_history),
                 ))
                 if m.point_id == preserve_id:
                     selected_iid = iid
@@ -1519,7 +1561,7 @@ class MeasurementPointsTab(ttk.Frame):
 
     def add_point_dialog(self):
         g = self.app.project.geometry
-        mp = MeasurementPoint(point_id=self.next_id(), x_m=g.width_m/2, y_m=g.length_m/2)
+        mp = MeasurementPoint(point_id=self.next_id(), x_m=g.width_m / 2, y_m=g.length_m / 2)
         self.app.project.measurements.append(mp)
         self.refresh(select_id=mp.point_id)
         self.app.floor_tab.set_selected_measurement(mp.point_id, sync_table=False, redraw=True)
@@ -1589,17 +1631,16 @@ class MeasurementPointsTab(ttk.Frame):
         self.app.set_status(f"Selected measurement {point_id} on Floor Plan")
 
     def edit_point(self, point_id: str):
-        for mp in self.app.project.measurements:
-            if mp.point_id == point_id:
-                self.select_point(point_id, sync_floor=True)
-                self._edit(mp)
-                return
+        mp = self._point_by_id(point_id)
+        if mp is not None:
+            self.select_point(point_id, sync_floor=True)
+            self._edit(mp)
 
     def edit_selected(self):
-        idx = self._selected_index()
-        if idx is None or idx >= len(self.app.project.measurements):
-            return
-        self._edit(self.app.project.measurements[idx])
+        point_id = self._selected_point_id()
+        mp = self._point_by_id(point_id)
+        if mp is not None:
+            self._edit(mp)
 
     def delete_selected(self):
         idx = self._selected_index()
@@ -1612,14 +1653,47 @@ class MeasurementPointsTab(ttk.Frame):
         self.refresh()
         self.app.mark_dirty()
         self.app.floor_tab.redraw()
-        self.app.set_status(f"Deleted measurement {point_id}")
+        self.app.set_status(f"Deleted measurement point {point_id}")
 
-    def _edit(self, mp, is_new=False):
+    def add_measurement_record(self, point_id: str, record: MeasurementRecord) -> bool:
+        """Programmatic workflow used by the UI and regression tests."""
+        mp = self._point_by_id(point_id)
+        if mp is None:
+            return False
+        if not record.record_id:
+            record.record_id = mp.next_record_id()
+        mp.add_measurement_record(record)
+        self.refresh(select_id=point_id)
+        self.app.mark_dirty()
+        self.app.floor_tab.set_selected_measurement(point_id, sync_table=False, redraw=True)
+        self.app.set_status(f"Recorded {record.record_id} at {point_id}")
+        return True
+
+    def record_selected(self):
+        point_id = self._selected_point_id()
+        mp = self._point_by_id(point_id)
+        if mp is None:
+            return
+        self._edit_record(mp, None)
+
+    def _edit(self, mp: MeasurementPoint, is_new: bool = False):
         original_id = mp.point_id
         win = tk.Toplevel(self)
-        win.title(f"Measurement Point — {mp.point_id}")
+        win.title(f"Measurement Point / Instrument — {mp.point_id}")
         win.transient(self.winfo_toplevel())
         win.grab_set()
+        win.columnconfigure(1, weight=1)
+
+        point_frame = ttk.LabelFrame(win, text="Spatial point", padding=8)
+        point_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=(10, 5))
+        point_frame.columnconfigure(1, weight=1)
+        instrument_frame = ttk.LabelFrame(win, text="Instrument / calibration", padding=8)
+        instrument_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        instrument_frame.columnconfigure(1, weight=1)
+        defaults_frame = ttk.LabelFrame(win, text="Survey defaults", padding=8)
+        defaults_frame.grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        defaults_frame.columnconfigure(1, weight=1)
+
         values = {
             "point_id": mp.point_id,
             "x_m": str(mp.x_m),
@@ -1627,61 +1701,75 @@ class MeasurementPointsTab(ttk.Frame):
             "height_m": str(mp.height_m),
             "location": mp.location,
             "instrument": mp.instrument,
-            "reading_uSv_h": "" if mp.reading_uSv_h is None else str(mp.reading_uSv_h),
-            "background_uSv_h": "" if mp.background_uSv_h is None else str(mp.background_uSv_h),
-            "status": mp.status,
-            "notes": mp.notes,
+            "instrument_id": mp.instrument_id,
+            "serial_number": mp.serial_number,
+            "calibration_date": mp.calibration_date,
+            "calibration_due_date": mp.calibration_due_date,
+            "calibration_reference": mp.calibration_reference,
+            "measurement_type": mp.measurement_type,
         }
-        vars_ = {k: tk.StringVar(value=v) for k,v in values.items() if k != "notes"}
-        row = 0
-        fields = (
+        vars_ = {k: tk.StringVar(value=v) for k, v in values.items()}
+
+        def entries(frame, fields):
+            for row, (label, key) in enumerate(fields):
+                ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=3)
+                ttk.Entry(frame, textvariable=vars_[key], width=44).grid(row=row, column=1, sticky="ew", pady=3)
+
+        entries(point_frame, (
             ("Point ID", "point_id"),
             ("X from West wall (m)", "x_m"),
             ("Y from South wall (m)", "y_m"),
             ("Height above FFL (m)", "height_m"),
             ("Location / description", "location"),
-            ("Instrument", "instrument"),
-            ("Reading (µSv/h)", "reading_uSv_h"),
-            ("Background (µSv/h)", "background_uSv_h"),
-        )
-        for label, key in fields:
-            ttk.Label(win, text=label).grid(row=row, column=0, sticky="w", padx=12, pady=4)
-            ttk.Entry(win, textvariable=vars_[key], width=42).grid(row=row, column=1, sticky="ew", padx=12, pady=4)
-            row += 1
-        ttk.Label(win, text="Status").grid(row=row, column=0, sticky="w", padx=12, pady=4)
-        ttk.Combobox(win, textvariable=vars_["status"], values=("Not assessed", "Pass", "Review", "Fail"), state="readonly", width=39).grid(row=row, column=1, sticky="ew", padx=12, pady=4)
-        row += 1
-        ttk.Label(win, text="Notes").grid(row=row, column=0, sticky="nw", padx=12, pady=4)
-        notes = tk.Text(win, height=5, width=42)
-        notes.insert("1.0", mp.notes)
-        notes.grid(row=row, column=1, sticky="ew", padx=12, pady=4)
-        row += 1
-        corrected_var = tk.StringVar(value="")
-        ttk.Label(win, text="Corrected reading").grid(row=row, column=0, sticky="w", padx=12, pady=4)
-        ttk.Label(win, textvariable=corrected_var).grid(row=row, column=1, sticky="w", padx=12, pady=4)
-        row += 1
+        ))
+        entries(instrument_frame, (
+            ("Instrument / make-model", "instrument"),
+            ("Instrument ID / asset ID", "instrument_id"),
+            ("Serial number", "serial_number"),
+            ("Calibration date (YYYY-MM-DD)", "calibration_date"),
+            ("Calibration due (YYYY-MM-DD)", "calibration_due_date"),
+            ("Calibration certificate/reference", "calibration_reference"),
+        ))
+        ttk.Label(defaults_frame, text="Measurement type").grid(row=0, column=0, sticky="w", padx=(0, 10), pady=3)
+        ttk.Entry(defaults_frame, textvariable=vars_["measurement_type"], width=44).grid(row=0, column=1, sticky="ew", pady=3)
+        ttk.Label(defaults_frame, text="Default field conditions").grid(row=1, column=0, sticky="nw", padx=(0, 10), pady=3)
+        conditions = tk.Text(defaults_frame, height=3, width=44)
+        conditions.insert("1.0", mp.field_conditions)
+        conditions.grid(row=1, column=1, sticky="ew", pady=3)
 
-        def preview(*_):
-            try:
-                reading = _float_or_none(vars_["reading_uSv_h"].get())
-                bg = _float_or_none(vars_["background_uSv_h"].get()) or 0.0
-                corrected_var.set("" if reading is None else f"{max(0.0, reading-bg):g} µSv/h")
-            except ValueError:
-                corrected_var.set("Invalid numeric value")
+        calib_var = tk.StringVar(value=mp.calibration_status(self.app.project.details.inspection_date))
+        ttk.Label(instrument_frame, text="Calibration status").grid(row=6, column=0, sticky="w", padx=(0, 10), pady=3)
+        ttk.Label(instrument_frame, textvariable=calib_var).grid(row=6, column=1, sticky="w", pady=3)
 
-        vars_["reading_uSv_h"].trace_add("write", preview)
-        vars_["background_uSv_h"].trace_add("write", preview)
-        preview()
+        def update_calibration(*_):
+            probe = MeasurementRecord(
+                record_id="_preview",
+                measured_at=self.app.project.details.inspection_date,
+                calibration_due_date=vars_["calibration_due_date"].get().strip(),
+            )
+            calib_var.set(probe.calibration_status(self.app.project.details.inspection_date))
+
+        vars_["calibration_due_date"].trace_add("write", update_calibration)
+
+        button_frame = ttk.Frame(win)
+        button_frame.grid(row=3, column=0, columnspan=2, sticky="e", padx=10, pady=10)
+
+        def cancel():
+            if is_new and mp in self.app.project.measurements and not mp.location and not mp.measurement_history:
+                self.app.project.measurements.remove(mp)
+                self.refresh()
+                if self.app.floor_tab.selected_measurement_id == mp.point_id:
+                    self.app.floor_tab.selected_measurement_id = None
+                self.app.floor_tab.redraw()
+            win.destroy()
 
         def save():
             try:
                 x = float(vars_["x_m"].get())
                 y = float(vars_["y_m"].get())
                 h = float(vars_["height_m"].get())
-                reading = _float_or_none(vars_["reading_uSv_h"].get())
-                bg = _float_or_none(vars_["background_uSv_h"].get())
             except ValueError:
-                messagebox.showerror("Measurement", "Coordinates, height and readings must be numeric or blank where permitted.", parent=win)
+                messagebox.showerror("Measurement", "Coordinates and height must be numeric.", parent=win)
                 return
             g = self.app.project.geometry
             if not (0 <= x <= g.width_m and 0 <= y <= g.length_m):
@@ -1698,28 +1786,269 @@ class MeasurementPointsTab(ttk.Frame):
             mp.height_m = h
             mp.location = vars_["location"].get().strip()
             mp.instrument = vars_["instrument"].get().strip()
-            mp.reading_uSv_h = reading
-            mp.background_uSv_h = bg
-            mp.status = vars_["status"].get()
-            mp.notes = notes.get("1.0", "end-1c").strip()
-            mp.recalculate()
+            mp.instrument_id = vars_["instrument_id"].get().strip()
+            mp.serial_number = vars_["serial_number"].get().strip()
+            mp.calibration_date = vars_["calibration_date"].get().strip()
+            mp.calibration_due_date = vars_["calibration_due_date"].get().strip()
+            mp.calibration_reference = vars_["calibration_reference"].get().strip()
+            mp.measurement_type = vars_["measurement_type"].get().strip() or "Ambient dose rate"
+            mp.field_conditions = conditions.get("1.0", "end-1c").strip()
             win.destroy()
             self.refresh(select_id=mp.point_id)
             self.app.mark_dirty()
             if self.app.floor_tab.selected_measurement_id == original_id or is_new:
                 self.app.floor_tab.selected_measurement_id = mp.point_id
             self.app.floor_tab.set_selected_measurement(mp.point_id, sync_table=False, redraw=True)
-            self.app.set_status(f"Updated measurement {mp.point_id}")
+            self.app.set_status(f"Updated measurement point {mp.point_id}")
+            if is_new:
+                self.after_idle(lambda: self._edit_record(mp, None))
 
-        ttk.Button(win, text="Save", command=save).grid(row=row, column=1, sticky="e", padx=12, pady=12)
+        ttk.Button(button_frame, text="Save point", command=save).pack(side="right")
+        ttk.Button(button_frame, text="Cancel", command=cancel).pack(side="right", padx=(0, 6))
 
         if is_new:
-            def on_close():
-                if mp in self.app.project.measurements and not mp.location and mp.reading_uSv_h is None:
-                    self.app.project.measurements.remove(mp)
-                    self.refresh()
-                    if self.app.floor_tab.selected_measurement_id == mp.point_id:
-                        self.app.floor_tab.selected_measurement_id = None
-                    self.app.floor_tab.redraw()
-                win.destroy()
-            win.protocol("WM_DELETE_WINDOW", on_close)
+            win.protocol("WM_DELETE_WINDOW", cancel)
+
+    def _edit_record(self, mp: MeasurementPoint, record: MeasurementRecord | None):
+        editing = record is not None
+        if record is None:
+            measured_default = self.app.project.details.inspection_date or datetime.now().date().isoformat()
+            record = MeasurementRecord(
+                record_id=mp.next_record_id(),
+                measured_at=measured_default,
+                instrument=mp.instrument,
+                instrument_id=mp.instrument_id,
+                serial_number=mp.serial_number,
+                calibration_date=mp.calibration_date,
+                calibration_due_date=mp.calibration_due_date,
+                calibration_reference=mp.calibration_reference,
+                measurement_type=mp.measurement_type,
+                field_conditions=mp.field_conditions,
+            )
+        win = tk.Toplevel(self)
+        win.title(f"{'Edit' if editing else 'Record'} Measurement — {mp.point_id}")
+        win.transient(self.winfo_toplevel())
+        win.grab_set()
+        win.columnconfigure(1, weight=1)
+
+        values = {
+            "record_id": record.record_id,
+            "measured_at": record.measured_at,
+            "instrument": record.instrument,
+            "instrument_id": record.instrument_id,
+            "serial_number": record.serial_number,
+            "calibration_date": record.calibration_date,
+            "calibration_due_date": record.calibration_due_date,
+            "calibration_reference": record.calibration_reference,
+            "measurement_type": record.measurement_type,
+            "reading_uSv_h": "" if record.reading_uSv_h is None else str(record.reading_uSv_h),
+            "background_uSv_h": "" if record.background_uSv_h is None else str(record.background_uSv_h),
+            "status": record.status,
+        }
+        vars_ = {k: tk.StringVar(value=v) for k, v in values.items()}
+
+        measurement_frame = ttk.LabelFrame(win, text="Measurement", padding=8)
+        measurement_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=(10, 5))
+        measurement_frame.columnconfigure(1, weight=1)
+        instrument_frame = ttk.LabelFrame(win, text="Instrument snapshot", padding=8)
+        instrument_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        instrument_frame.columnconfigure(1, weight=1)
+
+        row = 0
+        for label, key in (
+            ("Record ID", "record_id"),
+            ("Measured at (YYYY-MM-DD or ISO date/time)", "measured_at"),
+            ("Measurement type", "measurement_type"),
+            ("Gross reading (µSv/h)", "reading_uSv_h"),
+            ("Background (µSv/h)", "background_uSv_h"),
+        ):
+            ttk.Label(measurement_frame, text=label).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=3)
+            ttk.Entry(measurement_frame, textvariable=vars_[key], width=44).grid(row=row, column=1, sticky="ew", pady=3)
+            row += 1
+
+        corrected_var = tk.StringVar(value="")
+        ttk.Label(measurement_frame, text="Corrected reading").grid(row=row, column=0, sticky="w", padx=(0, 10), pady=3)
+        ttk.Label(measurement_frame, textvariable=corrected_var).grid(row=row, column=1, sticky="w", pady=3)
+        row += 1
+        ttk.Label(measurement_frame, text="Assessment status").grid(row=row, column=0, sticky="w", padx=(0, 10), pady=3)
+        ttk.Combobox(
+            measurement_frame,
+            textvariable=vars_["status"],
+            values=("Not assessed", "Pass", "Review", "Fail"),
+            state="readonly",
+            width=41,
+        ).grid(row=row, column=1, sticky="ew", pady=3)
+        row += 1
+        ttk.Label(measurement_frame, text="Field conditions").grid(row=row, column=0, sticky="nw", padx=(0, 10), pady=3)
+        conditions = tk.Text(measurement_frame, height=3, width=44)
+        conditions.insert("1.0", record.field_conditions)
+        conditions.grid(row=row, column=1, sticky="ew", pady=3)
+        row += 1
+        ttk.Label(measurement_frame, text="Measurement notes").grid(row=row, column=0, sticky="nw", padx=(0, 10), pady=3)
+        notes = tk.Text(measurement_frame, height=3, width=44)
+        notes.insert("1.0", record.notes)
+        notes.grid(row=row, column=1, sticky="ew", pady=3)
+
+        for row, (label, key) in enumerate((
+            ("Instrument / make-model", "instrument"),
+            ("Instrument ID / asset ID", "instrument_id"),
+            ("Serial number", "serial_number"),
+            ("Calibration date", "calibration_date"),
+            ("Calibration due", "calibration_due_date"),
+            ("Calibration certificate/reference", "calibration_reference"),
+        )):
+            ttk.Label(instrument_frame, text=label).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=3)
+            ttk.Entry(instrument_frame, textvariable=vars_[key], width=44).grid(row=row, column=1, sticky="ew", pady=3)
+
+        calibration_var = tk.StringVar(value="")
+        ttk.Label(instrument_frame, text="Calibration status at measurement").grid(row=6, column=0, sticky="w", padx=(0, 10), pady=3)
+        ttk.Label(instrument_frame, textvariable=calibration_var).grid(row=6, column=1, sticky="w", pady=3)
+
+        def preview(*_):
+            try:
+                reading = _float_or_none(vars_["reading_uSv_h"].get())
+                bg = _float_or_none(vars_["background_uSv_h"].get()) or 0.0
+                corrected_var.set("" if reading is None else f"{max(0.0, reading - bg):g} µSv/h")
+            except ValueError:
+                corrected_var.set("Invalid numeric value")
+            probe = MeasurementRecord(
+                record_id="_preview",
+                measured_at=vars_["measured_at"].get().strip(),
+                calibration_due_date=vars_["calibration_due_date"].get().strip(),
+            )
+            calibration_var.set(probe.calibration_status())
+
+        for key in ("reading_uSv_h", "background_uSv_h", "measured_at", "calibration_due_date"):
+            vars_[key].trace_add("write", preview)
+        preview()
+
+        button_frame = ttk.Frame(win)
+        button_frame.grid(row=2, column=0, columnspan=2, sticky="e", padx=10, pady=10)
+
+        def save_record():
+            try:
+                reading = _float_or_none(vars_["reading_uSv_h"].get())
+                background = _float_or_none(vars_["background_uSv_h"].get())
+            except ValueError:
+                messagebox.showerror("Measurement", "Gross and background readings must be numeric or blank.", parent=win)
+                return
+            new_record_id = vars_["record_id"].get().strip() or record.record_id or mp.next_record_id()
+            if any(other is not record and other.record_id == new_record_id for other in mp.measurement_history):
+                messagebox.showerror("Measurement", f"Record ID {new_record_id!r} is already in use at this point.", parent=win)
+                return
+            record.record_id = new_record_id
+            record.measured_at = vars_["measured_at"].get().strip()
+            record.instrument = vars_["instrument"].get().strip()
+            record.instrument_id = vars_["instrument_id"].get().strip()
+            record.serial_number = vars_["serial_number"].get().strip()
+            record.calibration_date = vars_["calibration_date"].get().strip()
+            record.calibration_due_date = vars_["calibration_due_date"].get().strip()
+            record.calibration_reference = vars_["calibration_reference"].get().strip()
+            record.measurement_type = vars_["measurement_type"].get().strip() or "Ambient dose rate"
+            record.field_conditions = conditions.get("1.0", "end-1c").strip()
+            record.reading_uSv_h = reading
+            record.background_uSv_h = background
+            record.status = vars_["status"].get()
+            record.notes = notes.get("1.0", "end-1c").strip()
+            record.recalculate()
+            if editing:
+                if mp.measurement_history and mp.measurement_history[-1] is record:
+                    mp.apply_record_as_latest(record)
+                self.refresh(select_id=mp.point_id)
+                self.app.mark_dirty()
+                self.app.floor_tab.redraw()
+                self.app.set_status(f"Updated {record.record_id} at {mp.point_id}")
+            else:
+                self.add_measurement_record(mp.point_id, record)
+            win.destroy()
+
+        ttk.Button(button_frame, text="Save measurement", command=save_record).pack(side="right")
+        ttk.Button(button_frame, text="Cancel", command=win.destroy).pack(side="right", padx=(0, 6))
+
+    def view_history(self):
+        point_id = self._selected_point_id()
+        mp = self._point_by_id(point_id)
+        if mp is None:
+            return
+        win = tk.Toplevel(self)
+        win.title(f"Measurement History — {mp.point_id}")
+        win.transient(self.winfo_toplevel())
+        win.geometry("1180x420")
+        win.rowconfigure(0, weight=1)
+        win.columnconfigure(0, weight=1)
+        cols = ("id", "when", "type", "instrument", "calibration", "gross", "bg", "corrected", "status", "conditions")
+        tree = ttk.Treeview(win, columns=cols, show="headings", selectmode="browse")
+        labels = ("Record", "Measured", "Type", "Instrument", "Calibration", "Gross", "BG", "Corrected", "Status", "Field conditions")
+        widths = (100, 130, 130, 170, 90, 75, 70, 85, 80, 220)
+        for c, label, width in zip(cols, labels, widths):
+            tree.heading(c, text=label)
+            tree.column(c, width=width, minwidth=55, stretch=c in {"instrument", "conditions"})
+        tree.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=10)
+        sb = ttk.Scrollbar(win, orient="vertical", command=tree.yview)
+        sb.grid(row=0, column=1, sticky="ns", pady=10)
+        tree.configure(yscrollcommand=sb.set)
+
+        def refill(select_index: int | None = None):
+            tree.delete(*tree.get_children())
+            for idx, record in enumerate(mp.measurement_history):
+                tree.insert("", "end", iid=str(idx), values=(
+                    record.record_id,
+                    record.measured_at,
+                    record.measurement_type,
+                    " / ".join(p for p in (record.instrument, record.instrument_id, record.serial_number) if p),
+                    record.calibration_status(),
+                    self._fmt(record.reading_uSv_h),
+                    self._fmt(record.background_uSv_h),
+                    self._fmt(record.corrected_uSv_h),
+                    record.status,
+                    record.field_conditions,
+                ))
+            if select_index is not None and 0 <= select_index < len(mp.measurement_history):
+                tree.selection_set(str(select_index))
+                tree.focus(str(select_index))
+
+        def selected_record():
+            sel = tree.selection()
+            if not sel:
+                return None, None
+            try:
+                idx = int(sel[0])
+            except ValueError:
+                return None, None
+            if not (0 <= idx < len(mp.measurement_history)):
+                return None, None
+            return idx, mp.measurement_history[idx]
+
+        def add():
+            self._edit_record(mp, None)
+            win.destroy()
+
+        def edit():
+            _idx, record = selected_record()
+            if record is None:
+                return
+            self._edit_record(mp, record)
+            win.destroy()
+
+        def delete():
+            idx, record = selected_record()
+            if record is None:
+                return
+            if not messagebox.askyesno("Measurement history", f"Delete {record.record_id}?", parent=win):
+                return
+            del mp.measurement_history[idx]
+            mp.sync_latest_from_history()
+            self.refresh(select_id=mp.point_id)
+            self.app.mark_dirty()
+            self.app.floor_tab.redraw()
+            refill(min(idx, len(mp.measurement_history) - 1) if mp.measurement_history else None)
+
+        buttons = ttk.Frame(win)
+        buttons.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=(0, 10))
+        ttk.Button(buttons, text="Add measurement…", command=add).pack(side="left")
+        ttk.Button(buttons, text="Edit selected…", command=edit).pack(side="left", padx=6)
+        ttk.Button(buttons, text="Delete selected", command=delete).pack(side="left")
+        ttk.Button(buttons, text="Close", command=win.destroy).pack(side="right")
+        tree.bind("<Double-1>", lambda _e: edit())
+        refill()
+

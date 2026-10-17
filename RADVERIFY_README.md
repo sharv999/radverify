@@ -1,4 +1,4 @@
-# RadVerify — V0.3 Step 2 Evidence Capture Prototype
+# RadVerify — V0.3 Step 3 Measurement Workflow Prototype
 
 RadVerify is a field-verification application built from the RadShield room/floor-plan foundation. V0.2 Step 2 introduces the shared **Radiation Room Digital Twin** interchange contract while retaining the V0.2 Step 1 floor-plan-centred workflow.
 
@@ -15,6 +15,17 @@ radshield_app_reference.py
 ```
 
 
+
+
+## V0.3 Step 3 — Measurement workflow upgrade
+
+- **Spatial point vs measurement event** — a floor-plan point is a durable survey location; multiple dated measurement records can now be stored against it.
+- **Instrument traceability** — make/model, asset ID, serial number, calibration date, due date and certificate/reference are captured and snapshotted into each measurement record.
+- **Calibration status** — the UI reports Current / Expired / Not recorded / Invalid date against the measurement date.
+- **Field conditions** — each reading can document source/room conditions independently of the point location.
+- **Gross / background / corrected** — corrected dose rate is calculated automatically and the latest record remains mirrored into the legacy single-reading fields for backwards compatibility.
+- **Measurement history** — add, edit and delete historical records without losing the spatial point; the main table shows latest result and history count.
+- **Digital Twin + RadStatus persistence** — instrument metadata and full measurement history travel in both native RadVerify JSON and `*.radtwin.json`.
 
 ## V0.3 Step 2 — Evidence capture
 

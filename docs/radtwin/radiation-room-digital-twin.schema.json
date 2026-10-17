@@ -403,6 +403,33 @@
         },
         "notes": {
           "type": "string"
+        },
+        "instrument_id": {
+          "type": "string"
+        },
+        "serial_number": {
+          "type": "string"
+        },
+        "calibration_date": {
+          "type": "string"
+        },
+        "calibration_due_date": {
+          "type": "string"
+        },
+        "calibration_reference": {
+          "type": "string"
+        },
+        "field_conditions": {
+          "type": "string"
+        },
+        "measured_at": {
+          "type": "string"
+        },
+        "measurement_history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/measurementRecord"
+          }
         }
       },
       "additionalProperties": true
@@ -436,6 +463,69 @@
           "type": "string"
         },
         "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "measurementRecord": {
+      "type": "object",
+      "required": [
+        "record_id"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string"
+        },
+        "measured_at": {
+          "type": "string"
+        },
+        "instrument": {
+          "type": "string"
+        },
+        "instrument_id": {
+          "type": "string"
+        },
+        "serial_number": {
+          "type": "string"
+        },
+        "calibration_date": {
+          "type": "string"
+        },
+        "calibration_due_date": {
+          "type": "string"
+        },
+        "calibration_reference": {
+          "type": "string"
+        },
+        "measurement_type": {
+          "type": "string"
+        },
+        "field_conditions": {
+          "type": "string"
+        },
+        "reading_uSv_h": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "background_uSv_h": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "corrected_uSv_h": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "notes": {
           "type": "string"
         }
       },

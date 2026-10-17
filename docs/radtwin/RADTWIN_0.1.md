@@ -51,7 +51,11 @@ construction or vice versa.
 - `barriers`: design, as-built and verification state for walls, floor, ceiling
   and openings
 - `inspection`: inspector/date/drawing/room notes
-- `measurement_points`: RadVerify field survey points and readings
+- `measurement_points`: spatial survey locations, instrument/calibration metadata, latest reading and append-only measurement history
+
+## Measurement history
+
+Schema 0.1 now permits richer measurement metadata without changing the schema identifier. Each spatial `measurement_point` may carry instrument identity, serial number, calibration dates/reference, field conditions and a `measurement_history` array. Each history record snapshots the instrument/calibration state and stores gross, background and corrected dose-rate readings, assessment status and notes. Legacy single-reading fields remain populated from the latest record for backwards compatibility with existing RadStatus/RadShield consumers.
 
 ## RadShield compatibility boundary
 

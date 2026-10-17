@@ -18,13 +18,13 @@ from geometry.geometry_model import (
     RoomGeometry,
     WallBucky,
 )
-from radverify.models import BARRIER_IDS, BarrierInspection, EvidenceItem, MeasurementPoint, RadVerifyProject, RoomDetails
+from radverify.models import BARRIER_IDS, BarrierInspection, EvidenceItem, MeasurementPoint, MeasurementRecord, RadVerifyProject, RoomDetails
 
 
 RADTWIN_SCHEMA = "radiation-room-digital-twin-0.1"
 RADTWIN_EXTENSION = ".radtwin.json"
 RADTWIN_PRODUCER = "RadVerify"
-RADTWIN_PRODUCER_VERSION = "0.3-step2"
+RADTWIN_PRODUCER_VERSION = "0.3-step3"
 
 
 class RadTwinValidationError(ValueError):
@@ -354,11 +354,27 @@ def project_from_radtwin(data: Dict[str, Any]) -> RadVerifyProject:
     for raw in data.get("measurement_points", []) or []:
         if not isinstance(raw, dict):
             continue
-        cleaned = {k: v for k, v in raw.items() if k in MeasurementPoint.__dataclass_fields__}
+        cleaned = {
+            k: v
+            for k, v in raw.items()
+            if k in MeasurementPoint.__dataclass_fields__ and k != "measurement_history"
+        }
         if not cleaned.get("point_id"):
             continue
-        point = MeasurementPoint(**cleaned)
+        history: list[MeasurementRecord] = []
+        for item in raw.get("measurement_history", raw.get("history", [])) or []:
+            if not isinstance(item, dict):
+                continue
+            item_cleaned = {k: v for k, v in item.items() if k in MeasurementRecord.__dataclass_fields__}
+            if not item_cleaned.get("record_id"):
+                continue
+            record = MeasurementRecord(**item_cleaned)
+            record.recalculate()
+            history.append(record)
+        point = MeasurementPoint(**cleaned, measurement_history=history)
         point.recalculate()
+        if history:
+            point.apply_record_as_latest(history[-1])
         measurements.append(point)
     project.measurements = measurements
     project.sync_opening_inspections()
