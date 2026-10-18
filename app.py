@@ -11,11 +11,11 @@ from radverify.radtwin import (
     project_from_radtwin,
     project_to_radtwin,
 )
-from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, MeasurementPointsTab
+from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, MeasurementPointsTab, RoomSummaryTab
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.3 Step 3 measurement workflow prototype"
+APP_VERSION = "0.3 Step 4 room verification summary prototype"
 PROJECT_EXTENSION = ".radverify.json"
 
 
@@ -62,10 +62,13 @@ class RadVerifyApp(tk.Tk):
         self.floor_tab = FloorPlanTab(self.notebook, self)
         self.barrier_tab = BarrierInspectionTab(self.notebook, self)
         self.measurement_tab = MeasurementPointsTab(self.notebook, self)
+        self.summary_tab = RoomSummaryTab(self.notebook, self)
         self.notebook.add(self.room_tab, text="1  Room Details")
         self.notebook.add(self.floor_tab, text="2  Floor Plan")
         self.notebook.add(self.barrier_tab, text="3  Barrier Inspection")
         self.notebook.add(self.measurement_tab, text="4  Measurement Points")
+        self.notebook.add(self.summary_tab, text="5  Room Summary")
+        self.notebook.bind("<<NotebookTabChanged>>", self._notebook_tab_changed)
         self.status_var = tk.StringVar(value="Ready")
         ttk.Label(shell, textvariable=self.status_var, style="Status.TLabel", anchor="w").pack(fill="x", padx=8, pady=(2, 5))
 
@@ -110,6 +113,18 @@ class RadVerifyApp(tk.Tk):
     def refresh_visuals(self):
         if hasattr(self, "floor_tab"):
             self.floor_tab.redraw()
+        if hasattr(self, "summary_tab"):
+            self.summary_tab.refresh()
+
+    def _notebook_tab_changed(self, _event=None):
+        if not hasattr(self, "summary_tab"):
+            return
+        try:
+            selected = self.notebook.nametowidget(self.notebook.select())
+        except Exception:
+            return
+        if selected is self.summary_tab:
+            self.summary_tab.refresh()
 
     def load_project_into_ui(self):
         self._loading = True
@@ -119,6 +134,7 @@ class RadVerifyApp(tk.Tk):
             self.floor_tab.refresh_openings()
             self.barrier_tab.refresh()
             self.measurement_tab.refresh()
+            self.summary_tab.refresh()
             self.after_idle(self.floor_tab.redraw)
         finally:
             self._loading = False

@@ -260,6 +260,149 @@ class RadVerifyProject:
         # Retain wall/slab records and only current opening records.
         self.barriers = [b for b in self.barriers if b.barrier_id in desired_ids]
 
+    def verification_summary(self, reference_date: str | None = None) -> Dict[str, Any]:
+        """Return a derived room-level verification/readiness summary.
+
+        This is intentionally a workflow summary, not an independent regulatory
+        compliance determination.  ``radstatus_ready`` means the verification
+        dataset is complete enough to hand off to RadStatus; it can still be
+        ready when the room outcome is Review or Fail.
+        """
+        self.sync_opening_inspections()
+        reference_date = reference_date or self.details.inspection_date or date.today().isoformat()
+
+        barrier_counts = {
+            "pass": 0, "review": 0, "fail": 0, "not_inspected": 0, "n_a": 0,
+        }
+        applicable_barriers = 0
+        as_built_complete = 0
+        evidence_complete = 0
+        evidence_integrity_issues = 0
+        issues: List[Dict[str, str]] = []
+
+        def add_issue(severity: str, area: str, item_id: str, issue: str) -> None:
+            issues.append({
+                "severity": severity,
+                "area": area,
+                "item_id": item_id,
+                "issue": issue,
+            })
+
+        for barrier in self.barriers:
+            status_key = barrier.status.strip().lower().replace("/", "_").replace(" ", "_")
+            if status_key == "n_a":
+                barrier_counts["n_a"] += 1
+                continue
+            applicable_barriers += 1
+            if status_key not in barrier_counts:
+                status_key = "not_inspected"
+            barrier_counts[status_key] += 1
+
+            if status_key == "fail":
+                add_issue("Fail", "Barrier", barrier.barrier_id, "Verification status is Fail")
+            elif status_key == "review":
+                add_issue("Review", "Barrier", barrier.barrier_id, "Verification status requires review")
+            elif status_key == "not_inspected":
+                add_issue("Incomplete", "Barrier", barrier.barrier_id, "Not inspected")
+
+            has_as_built = bool(barrier.observed_construction.strip()) or barrier.observed_pb_mm is not None
+            if has_as_built:
+                as_built_complete += 1
+            elif status_key != "not_inspected":
+                add_issue("Incomplete", "Barrier", barrier.barrier_id, "As-built construction not recorded")
+
+            has_evidence = bool(barrier.evidence_ref.strip()) or bool(barrier.evidence_items)
+            if has_evidence:
+                evidence_complete += 1
+            elif status_key != "not_inspected":
+                add_issue("Incomplete", "Evidence", barrier.barrier_id, "No inspection evidence recorded")
+
+            for evidence in barrier.evidence_items:
+                integrity = evidence.integrity_status()
+                if evidence.file_path and integrity != "Verified":
+                    evidence_integrity_issues += 1
+                    add_issue("Review", "Evidence", barrier.barrier_id, f"{evidence.evidence_id}: {integrity}")
+
+        measurement_counts = {"pass": 0, "review": 0, "fail": 0, "not_assessed": 0}
+        points_recorded = 0
+        points_calibration_current = 0
+        points_assessed = 0
+        if not self.measurements:
+            add_issue("Incomplete", "Measurement", "Room", "No measurement points recorded")
+
+        for point in self.measurements:
+            has_measurement = bool(point.measurement_history) or point.reading_uSv_h is not None
+            if has_measurement:
+                points_recorded += 1
+            else:
+                add_issue("Incomplete", "Measurement", point.point_id, "No measurement reading recorded")
+
+            status_key = point.status.strip().lower().replace(" ", "_")
+            if status_key not in measurement_counts:
+                status_key = "not_assessed"
+            measurement_counts[status_key] += 1
+            if status_key != "not_assessed":
+                points_assessed += 1
+            if status_key == "fail":
+                add_issue("Fail", "Measurement", point.point_id, "Latest measurement status is Fail")
+            elif status_key == "review":
+                add_issue("Review", "Measurement", point.point_id, "Latest measurement requires review")
+            elif status_key == "not_assessed":
+                add_issue("Incomplete", "Measurement", point.point_id, "Latest measurement is not assessed")
+
+            calibration_reference = point.measured_at or reference_date
+            calibration = point.calibration_status(calibration_reference)
+            if calibration == "Current":
+                points_calibration_current += 1
+            elif calibration == "Expired":
+                add_issue("Review", "Calibration", point.point_id, "Instrument calibration is expired")
+            else:
+                add_issue("Incomplete", "Calibration", point.point_id, f"Instrument calibration: {calibration}")
+
+        has_fail = barrier_counts["fail"] > 0 or measurement_counts["fail"] > 0
+        has_review = (
+            barrier_counts["review"] > 0
+            or measurement_counts["review"] > 0
+            or evidence_integrity_issues > 0
+            or any(issue["area"] == "Calibration" and issue["severity"] == "Review" for issue in issues)
+        )
+        has_incomplete = any(issue["severity"] == "Incomplete" for issue in issues)
+
+        if has_fail:
+            verification_state = "Failed"
+        elif has_review:
+            verification_state = "Review required"
+        elif has_incomplete:
+            verification_state = "Incomplete"
+        else:
+            verification_state = "Verified"
+
+        # Readiness is a data-completeness gate, separate from the room outcome.
+        # A fully documented Fail/Review package is still ready for RadStatus.
+        radstatus_ready = not has_incomplete and evidence_integrity_issues == 0
+
+        return {
+            "verification_state": verification_state,
+            "radstatus_ready": radstatus_ready,
+            "reference_date": reference_date,
+            "barriers": {
+                "total": len(self.barriers),
+                "applicable": applicable_barriers,
+                **barrier_counts,
+                "as_built_complete": as_built_complete,
+                "evidence_complete": evidence_complete,
+                "evidence_integrity_issues": evidence_integrity_issues,
+            },
+            "measurements": {
+                "points_total": len(self.measurements),
+                "points_recorded": points_recorded,
+                "points_assessed": points_assessed,
+                "calibration_current": points_calibration_current,
+                **measurement_counts,
+            },
+            "issues": issues,
+        }
+
     def to_dict(self) -> Dict[str, Any]:
         self.sync_opening_inspections()
         return {
@@ -285,6 +428,7 @@ class RadVerifyProject:
             "room_name": self.details.room_name,
             "room_type": self.details.room_type,
             "inspection_date": self.details.inspection_date,
+            "verification_summary": self.verification_summary(),
             "barrier_summary": counts,
             "barriers": [
                 {

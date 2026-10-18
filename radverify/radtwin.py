@@ -24,7 +24,7 @@ from radverify.models import BARRIER_IDS, BarrierInspection, EvidenceItem, Measu
 RADTWIN_SCHEMA = "radiation-room-digital-twin-0.1"
 RADTWIN_EXTENSION = ".radtwin.json"
 RADTWIN_PRODUCER = "RadVerify"
-RADTWIN_PRODUCER_VERSION = "0.3-step3"
+RADTWIN_PRODUCER_VERSION = "0.3-step4"
 
 
 class RadTwinValidationError(ValueError):
@@ -206,6 +206,7 @@ def project_to_radtwin(project: RadVerifyProject) -> Dict[str, Any]:
             "notes": details.notes,
         },
         "measurement_points": [asdict(m) for m in project.measurements],
+        "verification_summary": project.verification_summary(),
     }
 
 

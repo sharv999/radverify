@@ -170,6 +170,56 @@
       "items": {
         "$ref": "#/$defs/measurementPoint"
       }
+    },
+    "verification_summary": {
+      "type": "object",
+      "description": "Optional derived RadVerify room verification/readiness summary. It is informational and does not replace source barrier/measurement records.",
+      "properties": {
+        "verification_state": {
+          "enum": [
+            "Verified",
+            "Review required",
+            "Failed",
+            "Incomplete"
+          ]
+        },
+        "radstatus_ready": {
+          "type": "boolean"
+        },
+        "reference_date": {
+          "type": "string"
+        },
+        "barriers": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "measurements": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string"
+              },
+              "area": {
+                "type": "string"
+              },
+              "item_id": {
+                "type": "string"
+              },
+              "issue": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
     }
   },
   "$defs": {

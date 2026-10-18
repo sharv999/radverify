@@ -2052,3 +2052,207 @@ class MeasurementPointsTab(ttk.Frame):
         tree.bind("<Double-1>", lambda _e: edit())
         refill()
 
+
+
+class RoomSummaryTab(ttk.Frame):
+    """Derived room verification and RadStatus-readiness dashboard."""
+
+    ISSUE_COLUMNS = ("severity", "area", "item", "issue")
+
+    def __init__(self, master, app):
+        super().__init__(master, padding=10)
+        self.app = app
+        self._build()
+
+    def _build(self):
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(4, weight=1)
+
+        ttk.Label(self, text="Room Verification / Compliance Readiness", style="Title.TLabel").grid(
+            row=0, column=0, sticky="w"
+        )
+        ttk.Label(
+            self,
+            text=(
+                "Derived from the current RadVerify inspection record. This dashboard is a workflow/readiness summary "
+                "and is not, by itself, an independent regulatory compliance certification."
+            ),
+            wraplength=1250,
+            justify="left",
+        ).grid(row=1, column=0, sticky="w", pady=(2, 8))
+
+        header = ttk.Frame(self)
+        header.grid(row=2, column=0, sticky="ew", pady=(0, 8))
+        header.columnconfigure(0, weight=1)
+        header.columnconfigure(1, weight=1)
+
+        state_box = ttk.LabelFrame(header, text="Overall room state", padding=10)
+        state_box.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        readiness_box = ttk.LabelFrame(header, text="RadStatus hand-off", padding=10)
+        readiness_box.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+
+        self.state_var = tk.StringVar(value="Incomplete")
+        self.state_label = tk.Label(
+            state_box,
+            textvariable=self.state_var,
+            font=("Bahnschrift", 16, "bold"),
+            padx=14,
+            pady=8,
+            relief="solid",
+            bd=1,
+        )
+        self.state_label.pack(anchor="w")
+        self.state_detail_var = tk.StringVar(value="")
+        ttk.Label(state_box, textvariable=self.state_detail_var, wraplength=560, justify="left").pack(
+            anchor="w", pady=(8, 0)
+        )
+
+        self.ready_var = tk.StringVar(value="NOT READY")
+        self.ready_label = tk.Label(
+            readiness_box,
+            textvariable=self.ready_var,
+            font=("Bahnschrift", 16, "bold"),
+            padx=14,
+            pady=8,
+            relief="solid",
+            bd=1,
+        )
+        self.ready_label.pack(anchor="w")
+        self.ready_detail_var = tk.StringVar(value="")
+        ttk.Label(readiness_box, textvariable=self.ready_detail_var, wraplength=560, justify="left").pack(
+            anchor="w", pady=(8, 0)
+        )
+
+        metrics = ttk.Frame(self)
+        metrics.grid(row=3, column=0, sticky="ew", pady=(0, 8))
+        for c in range(3):
+            metrics.columnconfigure(c, weight=1)
+
+        barrier_frame = ttk.LabelFrame(metrics, text="Barrier verification", padding=9)
+        barrier_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 4))
+        evidence_frame = ttk.LabelFrame(metrics, text="Evidence completeness", padding=9)
+        evidence_frame.grid(row=0, column=1, sticky="nsew", padx=4)
+        measurement_frame = ttk.LabelFrame(metrics, text="Measurement survey", padding=9)
+        measurement_frame.grid(row=0, column=2, sticky="nsew", padx=(4, 0))
+
+        self.barrier_metrics_var = tk.StringVar()
+        self.evidence_metrics_var = tk.StringVar()
+        self.measurement_metrics_var = tk.StringVar()
+        ttk.Label(barrier_frame, textvariable=self.barrier_metrics_var, justify="left").pack(anchor="w")
+        ttk.Label(evidence_frame, textvariable=self.evidence_metrics_var, justify="left").pack(anchor="w")
+        ttk.Label(measurement_frame, textvariable=self.measurement_metrics_var, justify="left").pack(anchor="w")
+
+        issues_frame = ttk.LabelFrame(self, text="Outstanding items", padding=8)
+        issues_frame.grid(row=4, column=0, sticky="nsew")
+        issues_frame.columnconfigure(0, weight=1)
+        issues_frame.rowconfigure(0, weight=1)
+        self.issue_tree = ttk.Treeview(
+            issues_frame,
+            columns=self.ISSUE_COLUMNS,
+            show="headings",
+            selectmode="browse",
+        )
+        headings = {
+            "severity": "Severity",
+            "area": "Area",
+            "item": "Item",
+            "issue": "Outstanding item",
+        }
+        widths = {"severity": 95, "area": 110, "item": 130, "issue": 650}
+        for column in self.ISSUE_COLUMNS:
+            self.issue_tree.heading(column, text=headings[column])
+            self.issue_tree.column(column, width=widths[column], minwidth=70, stretch=column == "issue")
+        self.issue_tree.grid(row=0, column=0, sticky="nsew")
+        scrollbar = ttk.Scrollbar(issues_frame, orient="vertical", command=self.issue_tree.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        self.issue_tree.configure(yscrollcommand=scrollbar.set)
+
+        buttons = ttk.Frame(self)
+        buttons.grid(row=5, column=0, sticky="ew", pady=(8, 0))
+        ttk.Button(buttons, text="Refresh summary", command=self.refresh).pack(side="left")
+        ttk.Button(buttons, text="Barrier Inspection", command=lambda: self.app.notebook.select(self.app.barrier_tab)).pack(
+            side="left", padx=(8, 0)
+        )
+        ttk.Button(buttons, text="Measurement Points", command=lambda: self.app.notebook.select(self.app.measurement_tab)).pack(
+            side="left", padx=(6, 0)
+        )
+        ttk.Button(buttons, text="Export RadStatus payload…", command=self.app.export_radstatus_payload).pack(side="right")
+
+    @staticmethod
+    def _state_colours(state: str) -> tuple[str, str]:
+        if state == "Verified":
+            return COLOUR_PASS, "white"
+        if state == "Failed":
+            return COLOUR_FAIL, "white"
+        if state == "Review required":
+            return COLOUR_REVIEW_DARK, "white"
+        return "#6b7280", "white"
+
+    def refresh(self):
+        summary = self.app.project.verification_summary()
+        state = summary["verification_state"]
+        self.state_var.set(state)
+        background, foreground = self._state_colours(state)
+        self.state_label.configure(background=background, foreground=foreground)
+
+        barriers = summary["barriers"]
+        measurements = summary["measurements"]
+        self.state_detail_var.set(
+            f"Barriers: {barriers['pass']} Pass / {barriers['review']} Review / {barriers['fail']} Fail / "
+            f"{barriers['not_inspected']} not inspected. Measurements: {measurements['pass']} Pass / "
+            f"{measurements['review']} Review / {measurements['fail']} Fail / "
+            f"{measurements['not_assessed']} not assessed."
+        )
+
+        ready = bool(summary["radstatus_ready"])
+        self.ready_var.set("READY FOR RADSTATUS" if ready else "NOT READY FOR RADSTATUS")
+        self.ready_label.configure(
+            background=COLOUR_PASS if ready else COLOUR_REVIEW_DARK,
+            foreground="white",
+        )
+        self.ready_detail_var.set(
+            "The verification dataset is complete enough for RadStatus hand-off. Outcome may still be Review or Fail."
+            if ready
+            else "Complete the outstanding inspection/evidence/measurement data before RadStatus hand-off."
+        )
+
+        self.barrier_metrics_var.set(
+            "\n".join((
+                f"Applicable barriers: {barriers['applicable']} / {barriers['total']}",
+                f"Pass: {barriers['pass']}",
+                f"Review: {barriers['review']}",
+                f"Fail: {barriers['fail']}",
+                f"Not inspected: {barriers['not_inspected']}",
+                f"N/A: {barriers['n_a']}",
+                f"As-built recorded: {barriers['as_built_complete']} / {barriers['applicable']}",
+            ))
+        )
+        self.evidence_metrics_var.set(
+            "\n".join((
+                f"Evidence recorded: {barriers['evidence_complete']} / {barriers['applicable']}",
+                f"Integrity issues: {barriers['evidence_integrity_issues']}",
+                "Reference-only evidence is accepted as recorded evidence.",
+            ))
+        )
+        self.measurement_metrics_var.set(
+            "\n".join((
+                f"Spatial points: {measurements['points_total']}",
+                f"Points with readings: {measurements['points_recorded']}",
+                f"Assessed points: {measurements['points_assessed']}",
+                f"Calibration current: {measurements['calibration_current']}",
+                f"Pass / Review / Fail: {measurements['pass']} / {measurements['review']} / {measurements['fail']}",
+                f"Not assessed: {measurements['not_assessed']}",
+            ))
+        )
+
+        self.issue_tree.delete(*self.issue_tree.get_children())
+        for index, issue in enumerate(summary["issues"]):
+            self.issue_tree.insert(
+                "",
+                "end",
+                iid=str(index),
+                values=(issue["severity"], issue["area"], issue["item_id"], issue["issue"]),
+            )
+        if not summary["issues"]:
+            self.issue_tree.insert("", "end", values=("—", "—", "—", "No outstanding items"))
+        return summary

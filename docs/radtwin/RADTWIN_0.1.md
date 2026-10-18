@@ -77,3 +77,8 @@ Schema 0.1 is identified by:
 
 Breaking changes require a new schema identifier.  Product-specific project
 schemas may evolve independently of the shared twin schema.
+
+## Optional verification summary
+
+RadVerify V0.3 Step 4 may include a top-level `verification_summary` object. It is derived from the underlying barrier, evidence and measurement records and is intended for dashboard/readiness use by RadStatus. It is not authoritative over the source records and does not itself constitute an independent regulatory compliance certification. Older consumers may ignore this optional object.
+

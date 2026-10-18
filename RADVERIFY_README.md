@@ -1,4 +1,4 @@
-# RadVerify — V0.3 Step 3 Measurement Workflow Prototype
+# RadVerify — V0.3 Step 4 Room Verification Summary Prototype
 
 RadVerify is a field-verification application built from the RadShield room/floor-plan foundation. V0.2 Step 2 introduces the shared **Radiation Room Digital Twin** interchange contract while retaining the V0.2 Step 1 floor-plan-centred workflow.
 
@@ -15,7 +15,17 @@ radshield_app_reference.py
 ```
 
 
+## V0.3 Step 4 — Room-level verification / compliance readiness summary
 
+- **New Room Summary tab** — provides a derived room-level view across barriers, evidence and measurements.
+- **Overall room state** — `Verified`, `Review required`, `Failed` or `Incomplete`, with Fail/Review outcomes kept distinct from missing data.
+- **RadStatus readiness** — a separate data-completeness gate; a fully documented Review/Fail package can still be ready for RadStatus hand-off.
+- **Barrier completeness** — counts Pass / Review / Fail / Not inspected / N/A and tracks whether as-built construction has been recorded.
+- **Evidence completeness/integrity** — reports evidence coverage and linked-file integrity issues without treating reference-only evidence as missing.
+- **Measurement completeness** — reports spatial points, readings, assessment status and current calibration count.
+- **Outstanding-items register** — consolidated Fail / Review / Incomplete items identify exactly what needs attention.
+- **Interchange + RadStatus** — the derived `verification_summary` is included in both the draft RadStatus payload and `*.radtwin.json` as optional informational metadata; source barrier/measurement records remain authoritative.
+- **No automatic regulatory certification** — the dashboard is explicitly a workflow/readiness summary, not an independent compliance determination.
 
 ## V0.3 Step 3 — Measurement workflow upgrade
 
