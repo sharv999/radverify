@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
 from radverify.models import RadVerifyProject
+from radverify.reporting import build_verification_pdf
 from radverify.radtwin import (
     RADTWIN_EXTENSION,
     project_from_radtwin,
@@ -15,7 +16,7 @@ from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, M
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.3 Step 4 room verification summary prototype"
+APP_VERSION = "0.4 Step 1 draft field reporting prototype"
 PROJECT_EXTENSION = ".radverify.json"
 
 
@@ -55,6 +56,7 @@ class RadVerifyApp(tk.Tk):
         topbar = ttk.Frame(shell)
         topbar.pack(fill="x", padx=8, pady=(8, 0))
         ttk.Button(topbar, text="Quit", command=self.on_close).pack(side="right")
+        ttk.Button(topbar, text="Export verification PDF…", command=self.export_verification_pdf).pack(side="right", padx=(0, 8))
 
         self.notebook = ttk.Notebook(shell)
         self.notebook.pack(fill="both", expand=True, padx=8, pady=(4, 0))
@@ -85,6 +87,7 @@ class RadVerifyApp(tk.Tk):
         file_menu.add_command(label="Export Radiation Room Digital Twin…", command=self.export_radtwin)
         file_menu.add_separator()
         file_menu.add_command(label="Export RadStatus payload…", command=self.export_radstatus_payload)
+        file_menu.add_command(label="Export draft verification report (PDF)…", command=self.export_verification_pdf)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_close)
         menu.add_cascade(label="File", menu=file_menu)
@@ -257,6 +260,25 @@ class RadVerifyApp(tk.Tk):
             messagebox.showerror("Export", f"Could not export RadStatus payload:\n{exc}")
             return
         self.set_status(f"Exported RadStatus payload: {Path(filename).name}")
+
+    def export_verification_pdf(self):
+        """Generate a non-certifying field record without changing project-file state."""
+        self.room_tab.apply_to_model()
+        project_id = self.project.details.project_id or "radverify"
+        filename = filedialog.asksaveasfilename(
+            title="Export draft Radiation Room Verification PDF",
+            defaultextension=".pdf",
+            initialfile=f"{project_id}_field_verification_DRAFT.pdf",
+            filetypes=(("PDF report", "*.pdf"),),
+        )
+        if not filename:
+            return
+        try:
+            build_verification_pdf(self.project, filename)
+        except Exception as exc:
+            messagebox.showerror("Export verification PDF", f"Could not create report:\n{exc}")
+            return
+        self.set_status(f"Exported DRAFT field report: {Path(filename).name}")
 
     def on_close(self):
         if self._confirm_discard():

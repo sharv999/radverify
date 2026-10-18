@@ -99,3 +99,12 @@ Each saved project also contains a draft `radstatus_payload`, and the File menu 
 - No report/PDF generation yet.
 - Evidence files are linked rather than embedded or copied into a managed evidence package; packaging is a later step.
 - RadStatus interface is a draft JSON payload only; no live API connection yet.
+
+## V0.4 Step 1 - Draft field verification PDF
+
+- **File > Export draft verification report (PDF)...** and **Export verification PDF...** in the top toolbar produce a multipage PDF report directly from the current RadVerify project (no intermediate RadShield calculation).
+- Includes room identity, derived Room Summary, a **vector floor-plan schematic** showing named walls/openings, source location and measurement-point markers, barrier design/as-built schedule, notes, evidence register with on-demand file-integrity status, all measurement history and outstanding issues.
+- Report is conspicuously marked **DRAFT - NOT A COMPLIANCE CERTIFICATE**. Recorded Pass/Review/Fail values are not independently assessed against regulatory limits. Uninspected/missing records are displayed rather than inferred as passing.
+- Evidence files are referenced in the register **but not embedded**. Keep and transmit them separately. The full local path is not printed in the client PDF.
+- PDF generation is independent of the Tk GUI in `radverify/reporting.py` and can be tested headlessly. A failed PDF export does not overwrite an existing PDF.
+- The report does not substitute for an authorised medical physicist's assessment, QA review, sign-off or applicable regulatory requirements.
