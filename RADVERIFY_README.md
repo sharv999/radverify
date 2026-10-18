@@ -108,3 +108,13 @@ Each saved project also contains a draft `radstatus_payload`, and the File menu 
 - Evidence files are referenced in the register **but not embedded**. Keep and transmit them separately. The full local path is not printed in the client PDF.
 - PDF generation is independent of the Tk GUI in `radverify/reporting.py` and can be tested headlessly. A failed PDF export does not overwrite an existing PDF.
 - The report does not substitute for an authorised medical physicist's assessment, QA review, sign-off or applicable regulatory requirements.
+
+## V0.4 Step 2 — Portable field evidence package
+
+- **Export field package ZIP…** in the toolbar and File menu creates a single archive with `project/room.radverify.json`, `twin/room.radtwin.json`, the draft PDF, and linked evidence under `evidence/`.
+- Evidence file paths in both JSON exports are *relative to the JSON file*; when opening an extracted project/twin, RadVerify resolves them relative to its location (not the current terminal directory). The current open project and original linked files remain unchanged.
+- Every ZIP member except the manifest has a SHA-256 and byte count in `manifest.json`; `python -m radverify.packaging path/to/archive.zip` checks the inventory without extraction.
+- Packaging rejects missing/unreadable evidence, evidence with no recorded hash, or any file whose content does not match its recorded hash. Reference-only evidence remains metadata, explicitly listed as such.
+- Export is atomic: an unsuccessful build leaves any existing destination ZIP untouched.
+- **Important:** Checksums are for transport integrity, not tamperproof provenance or authentication; a malicious actor can replace both the contents and the unsigned manifest. The ZIP and report are **not compliance certification**.
+- To use the exported archive: extract it completely, then open `project/room.radverify.json` in RadVerify; do not open the JSON directly inside the ZIP.

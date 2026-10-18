@@ -7,6 +7,7 @@ from tkinter import ttk, filedialog, messagebox
 
 from radverify.models import RadVerifyProject
 from radverify.reporting import build_verification_pdf
+from radverify.packaging import build_field_package, resolve_evidence_paths
 from radverify.radtwin import (
     RADTWIN_EXTENSION,
     project_from_radtwin,
@@ -16,7 +17,7 @@ from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, M
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.4 Step 1 draft field reporting prototype"
+APP_VERSION = "0.4 Step 2 portable field evidence prototype"
 PROJECT_EXTENSION = ".radverify.json"
 
 
@@ -57,6 +58,7 @@ class RadVerifyApp(tk.Tk):
         topbar.pack(fill="x", padx=8, pady=(8, 0))
         ttk.Button(topbar, text="Quit", command=self.on_close).pack(side="right")
         ttk.Button(topbar, text="Export verification PDF…", command=self.export_verification_pdf).pack(side="right", padx=(0, 8))
+        ttk.Button(topbar, text="Export field package ZIP…", command=self.export_field_package).pack(side="right", padx=(0, 8))
 
         self.notebook = ttk.Notebook(shell)
         self.notebook.pack(fill="both", expand=True, padx=8, pady=(4, 0))
@@ -88,6 +90,7 @@ class RadVerifyApp(tk.Tk):
         file_menu.add_separator()
         file_menu.add_command(label="Export RadStatus payload…", command=self.export_radstatus_payload)
         file_menu.add_command(label="Export draft verification report (PDF)…", command=self.export_verification_pdf)
+        file_menu.add_command(label="Export portable field package (ZIP)…", command=self.export_field_package)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_close)
         menu.add_cascade(label="File", menu=file_menu)
@@ -171,6 +174,7 @@ class RadVerifyApp(tk.Tk):
         try:
             data = json.loads(Path(filename).read_text(encoding="utf-8"))
             self.project = RadVerifyProject.from_dict(data)
+            resolve_evidence_paths(self.project, Path(filename).parent)
         except Exception as exc:
             messagebox.showerror("Open project", f"Could not open project:\n{exc}")
             return
@@ -216,6 +220,7 @@ class RadVerifyApp(tk.Tk):
         try:
             data = json.loads(Path(filename).read_text(encoding="utf-8"))
             self.project = project_from_radtwin(data)
+            resolve_evidence_paths(self.project, Path(filename).parent)
         except Exception as exc:
             messagebox.showerror("Import digital twin", f"Could not import Radiation Room Digital Twin:\n{exc}")
             return
@@ -279,6 +284,25 @@ class RadVerifyApp(tk.Tk):
             messagebox.showerror("Export verification PDF", f"Could not create report:\n{exc}")
             return
         self.set_status(f"Exported DRAFT field report: {Path(filename).name}")
+
+    def export_field_package(self):
+        """Create a complete transfer archive, without changing the working project."""
+        self.room_tab.apply_to_model()
+        project_id = self.project.details.project_id or "radverify"
+        filename = filedialog.asksaveasfilename(
+            title="Export portable RadVerify field package",
+            defaultextension=".zip",
+            initialfile=f"{project_id}_field_record.zip",
+            filetypes=(("RadVerify field package", "*.zip"),),
+        )
+        if not filename:
+            return
+        try:
+            build_field_package(self.project, filename)
+        except Exception as exc:
+            messagebox.showerror("Export field package", f"Could not package field record:\n{exc}")
+            return
+        self.set_status(f"Exported portable field package: {Path(filename).name}")
 
     def on_close(self):
         if self._confirm_discard():
