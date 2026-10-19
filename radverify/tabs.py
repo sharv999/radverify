@@ -12,6 +12,7 @@ from typing import Callable
 
 from geometry.geometry_canvas import GeometryCanvas, DESIGN_FIELD_WIDTH_M, DESIGN_FIELD_HEIGHT_M, CANVAS_MARGIN_PX
 from geometry.geometry_model import Opening
+from geometry.room_defaults import get_barrier_default
 from config.geometry_constants import MIN_ROOM_DIMENSION_M
 from config.ui_constants import COLOUR_PASS, COLOUR_REVIEW_DARK, COLOUR_FAIL, COLOUR_TEXT
 from radverify.models import RadVerifyProject, BarrierInspection, EvidenceItem, MeasurementPoint, MeasurementRecord, STATUS_OPTIONS
@@ -25,6 +26,50 @@ def _float_or_none(value: str):
     if not text:
         return None
     return float(text)
+
+
+# Opening-editor defaults are suggested values, not verification findings.
+# The Pb equivalence may be overridden by the inspector and must never be
+# silently treated as an as-built measurement.
+_OPENING_MATERIALS = {
+    "door": ("Lead-lined door", "Solid timber + Pb", "Steel + Pb", "Fire door + Pb", "Pb"),
+    "viewing_panel": ("Pb equivalent glass", "Pb glass", "Lead acrylic"),
+}
+_OPENING_LABEL_PREFIX = {"door": "Door", "viewing_panel": "Viewing Panel"}
+
+
+def opening_editor_defaults(opening_type: str, room_type: str = "CT") -> dict[str, str]:
+    """Proposed opening editor values, consistent with RadShield's room defaults."""
+    kind = "viewing_panel" if opening_type == "viewing_panel" else "door"
+    spec = get_barrier_default(room_type, kind)
+    return {
+        "material": _OPENING_MATERIALS[kind][0],
+        "pb": f"{float(spec.get('pb_mm', 2.2 if kind == 'viewing_panel' else 0.88)):g}",
+        "width": "1.2" if kind == "viewing_panel" else "0.9",
+        "sill": f"{float(spec.get('sill_height_above_ffl_m', 0.9 if kind == 'viewing_panel' else 0.0)):g}",
+        "head": f"{float(spec.get('head_height_above_ffl_m', 1.8 if kind == 'viewing_panel' else 2.1)):g}",
+    }
+
+
+def switched_opening_fields(
+    values: dict[str, str], previous_type: str, new_type: str, room_type: str = "CT"
+) -> dict[str, str]:
+    """Refresh type-dependent defaults without erasing custom size/shielding entries."""
+    before = opening_editor_defaults(previous_type, room_type)
+    after = opening_editor_defaults(new_type, room_type)
+    updated = dict(values)
+    for key in ("width", "pb", "sill", "head"):
+        current = values.get(key, "").strip()
+        try:
+            is_default = (not current or abs(float(current) - float(before[key])) < 1e-9)
+        except ValueError:
+            is_default = False
+        if is_default:
+            updated[key] = after[key]
+    current_material = values.get("material", "").strip()
+    if not current_material or current_material not in _OPENING_MATERIALS[new_type]:
+        updated["material"] = after["material"]
+    return updated
 
 
 class RoomDetailsTab(ttk.Frame):
@@ -126,6 +171,36 @@ class RoomDetailsTab(ttk.Frame):
             self.app.floor_tab.load_dimensions()
         self.app.mark_dirty()
         self.app.refresh_visuals()
+
+
+def _pb_equivalence_text(value: float | None) -> str:
+    """Render a recorded Pb-equivalence value without guessing from design/status."""
+    if value is None:
+        return "not recorded"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "not recorded"
+    if not math.isfinite(number) or number < 0:
+        return "not recorded"
+    return f"{number:g} mm"
+
+
+def floor_plan_wall_pb_labels(barriers: list[BarrierInspection]) -> tuple[dict[str, str], dict[str, str]]:
+    """Return separately identified as-built and design labels for the four walls.
+
+    Inspection status does not establish thickness; ``observed_pb_mm`` is the
+    only source of the as-built Pb-equivalence label. A missing field stays
+    missing even when a design specification or Pass status exists.
+    """
+    as_built, design = {}, {}
+    for barrier in barriers:
+        if barrier.barrier_id not in {"N wall", "E wall", "S wall", "W wall"}:
+            continue
+        as_built[barrier.barrier_id] = f"As-built Pb eq: {_pb_equivalence_text(barrier.observed_pb_mm)}"
+        if barrier.expected_pb_mm is not None:
+            design[barrier.barrier_id] = f"Design Pb eq: {_pb_equivalence_text(barrier.expected_pb_mm)}"
+    return as_built, design
 
 
 class FloorPlanTab(ttk.Frame):
@@ -257,16 +332,20 @@ class FloorPlanTab(ttk.Frame):
         selected.columnconfigure(1, weight=1)
         self.selected_barrier_var = tk.StringVar(value="None")
         self.selected_barrier_status_var = tk.StringVar(value="")
+        self.selected_barrier_pb_var = tk.StringVar(value="")
         ttk.Label(selected, textvariable=self.selected_barrier_var, style="Section.TLabel").grid(
             row=0, column=0, columnspan=2, sticky="w"
         )
         ttk.Label(selected, textvariable=self.selected_barrier_status_var).grid(
             row=1, column=0, columnspan=2, sticky="w", pady=(2, 6)
         )
+        ttk.Label(selected, textvariable=self.selected_barrier_pb_var, justify="left", wraplength=270).grid(
+            row=2, column=0, columnspan=2, sticky="w", pady=(0, 6)
+        )
         self.edit_barrier_button = ttk.Button(
             selected, text="Open inspection…", command=self.open_selected_barrier
         )
-        self.edit_barrier_button.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(0, 5))
+        self.edit_barrier_button.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(0, 5))
         self.pass_button = ttk.Button(
             selected, text="Pass", command=lambda: self.set_selected_barrier_status("Pass")
         )
@@ -276,15 +355,15 @@ class FloorPlanTab(ttk.Frame):
         self.fail_button = ttk.Button(
             selected, text="Fail", command=lambda: self.set_selected_barrier_status("Fail")
         )
-        self.pass_button.grid(row=3, column=0, sticky="ew", padx=(0, 2))
-        self.review_button.grid(row=3, column=1, sticky="ew", padx=(2, 0))
-        self.fail_button.grid(row=4, column=0, sticky="ew", padx=(0, 2), pady=(4, 0))
+        self.pass_button.grid(row=4, column=0, sticky="ew", padx=(0, 2))
+        self.review_button.grid(row=4, column=1, sticky="ew", padx=(2, 0))
+        self.fail_button.grid(row=5, column=0, sticky="ew", padx=(0, 2), pady=(4, 0))
         self.not_inspected_button = ttk.Button(
             selected, text="Not inspected", command=lambda: self.set_selected_barrier_status("Not inspected")
         )
-        self.not_inspected_button.grid(row=4, column=1, sticky="ew", padx=(2, 0), pady=(4, 0))
+        self.not_inspected_button.grid(row=5, column=1, sticky="ew", padx=(2, 0), pady=(4, 0))
         floor_ceiling = ttk.Frame(selected)
-        floor_ceiling.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(8, 0))
+        floor_ceiling.grid(row=6, column=0, columnspan=2, sticky="ew", pady=(8, 0))
         floor_ceiling.columnconfigure(0, weight=1)
         floor_ceiling.columnconfigure(1, weight=1)
         ttk.Button(floor_ceiling, text="Select Floor", command=lambda: self.set_selected_barrier("Floor")).grid(
@@ -487,6 +566,13 @@ class FloorPlanTab(ttk.Frame):
         if hasattr(self, "selected_barrier_var"):
             self.selected_barrier_var.set(barrier.barrier_id if barrier else "None")
             self.selected_barrier_status_var.set(f"Status: {barrier.status}" if barrier else "")
+            if barrier is None:
+                self.selected_barrier_pb_var.set("")
+            else:
+                lines = [f"As-built Pb eq: {_pb_equivalence_text(barrier.observed_pb_mm)}"]
+                if barrier.expected_pb_mm is not None:
+                    lines.append(f"Design Pb eq: {_pb_equivalence_text(barrier.expected_pb_mm)}")
+                self.selected_barrier_pb_var.set("\n".join(lines))
             state = "normal" if barrier else "disabled"
             for button in (self.edit_barrier_button, self.pass_button, self.review_button, self.fail_button, self.not_inspected_button):
                 button.configure(state=state)
@@ -560,14 +646,31 @@ class FloorPlanTab(ttk.Frame):
         win.grab_set()
         win.columnconfigure(1, weight=1)
 
+        room_type = self.app.project.details.room_type
+        existing_ids = {b.barrier_id for b in self.app.project.barriers}
+
+        def next_label(kind: str) -> str:
+            prefix = _OPENING_LABEL_PREFIX[kind]
+            index = 1
+            while f"{prefix} {index}" in existing_ids:
+                index += 1
+            return f"{prefix} {index}"
+
+        prior_type = self.kind_var.get()
+        defaults = opening_editor_defaults(prior_type, room_type)
+        previous_label = self.label_var.get()
+        if previous_label in existing_ids:
+            previous_label = next_label(prior_type)
         local = {
             "wall": tk.StringVar(value=self.wall_var.get()),
-            "kind": tk.StringVar(value=self.kind_var.get()),
+            "kind": tk.StringVar(value=prior_type),
             "offset": tk.StringVar(value=self.offset_var.get()),
             "width": tk.StringVar(value=self.width_var.get()),
-            "label": tk.StringVar(value=self.label_var.get()),
+            "label": tk.StringVar(value=previous_label),
             "material": tk.StringVar(value=self.material_var.get()),
             "pb": tk.StringVar(value=self.pb_var.get()),
+            "sill": tk.StringVar(value=defaults["sill"]),
+            "head": tk.StringVar(value=defaults["head"]),
         }
         row = 0
         ttk.Label(win, text="Wall").grid(row=row, column=0, sticky="w", padx=12, pady=4)
@@ -576,31 +679,64 @@ class FloorPlanTab(ttk.Frame):
         )
         row += 1
         ttk.Label(win, text="Type").grid(row=row, column=0, sticky="w", padx=12, pady=4)
-        ttk.Combobox(win, textvariable=local["kind"], values=("door", "viewing_panel"), state="readonly", width=24).grid(
-            row=row, column=1, sticky="ew", padx=12, pady=4
-        )
+        kind_combo = ttk.Combobox(win, textvariable=local["kind"], values=("door", "viewing_panel"), state="readonly", width=24)
+        kind_combo.grid(row=row, column=1, sticky="ew", padx=12, pady=4)
         row += 1
         for label, key in (
-            ("Offset from wall origin (m)", "offset"),
+            ("Offset to opening centre (m)", "offset"),
             ("Width (m)", "width"),
             ("Label / ID", "label"),
-            ("Material", "material"),
+        ):
+            ttk.Label(win, text=label).grid(row=row, column=0, sticky="w", padx=12, pady=4)
+            ttk.Entry(win, textvariable=local[key], width=28).grid(row=row, column=1, sticky="ew", padx=12, pady=4)
+            row += 1
+        ttk.Label(win, text="Material").grid(row=row, column=0, sticky="w", padx=12, pady=4)
+        material_combo = ttk.Combobox(win, textvariable=local["material"], values=_OPENING_MATERIALS[prior_type], width=26)
+        material_combo.grid(row=row, column=1, sticky="ew", padx=12, pady=4)
+        row += 1
+        for label, key in (
             ("Pb equivalence (mm)", "pb"),
+            ("Sill above FFL (m)", "sill"),
+            ("Head above FFL (m)", "head"),
         ):
             ttk.Label(win, text=label).grid(row=row, column=0, sticky="w", padx=12, pady=4)
             ttk.Entry(win, textvariable=local[key], width=28).grid(row=row, column=1, sticky="ew", padx=12, pady=4)
             row += 1
 
+        def on_type_change(_event=None):
+            nonlocal prior_type
+            kind = local["kind"].get()
+            if kind == prior_type or kind not in _OPENING_MATERIALS:
+                return
+            values = {key: var.get() for key, var in local.items()}
+            updated = switched_opening_fields(values, prior_type, kind, room_type)
+            for key in ("material", "width", "pb", "sill", "head"):
+                local[key].set(updated[key])
+            old_prefix = _OPENING_LABEL_PREFIX[prior_type]
+            label = local["label"].get().strip()
+            # Only auto-rename an auto-generated ID, never a deliberate user ID.
+            if label.startswith(old_prefix + " ") and label[len(old_prefix) + 1:].isdigit():
+                local["label"].set(next_label(kind))
+            material_combo["values"] = _OPENING_MATERIALS[kind]
+            prior_type = kind
+
+        kind_combo.bind("<<ComboboxSelected>>", on_type_change)
+
         def save():
             try:
                 offset = float(local["offset"].get())
                 width = float(local["width"].get())
-                pb = float(local["pb"].get() or 0.0)
+                pb = float(local["pb"].get())
+                sill = float(local["sill"].get())
+                head = float(local["head"].get())
             except ValueError:
-                messagebox.showerror("Opening", "Offset, width and Pb equivalence must be numeric.", parent=win)
+                messagebox.showerror("Opening", "Offset, width, Pb equivalence and heights must be numeric.", parent=win)
                 return
-            if width <= 0:
-                messagebox.showerror("Opening", "Opening width must be greater than zero.", parent=win)
+            if not all(math.isfinite(v) for v in (offset, width, pb, sill, head)) or width <= 0 or pb < 0:
+                messagebox.showerror("Opening", "Use finite values; width must be positive and Pb equivalence non-negative.", parent=win)
+                return
+            if sill < 0 or head <= sill or head > self.app.project.geometry.height_m:
+                messagebox.showerror("Opening", "Require 0 ≤ sill < head ≤ room height.", parent=win)
                 return
             wall = local["wall"].get()
             wall_length = self.app.project.geometry.width_m if wall in {"N", "S"} else self.app.project.geometry.length_m
@@ -612,22 +748,27 @@ class FloorPlanTab(ttk.Frame):
                     parent=win,
                 )
                 return
-            label = local["label"].get().strip() or f"Opening {len(self.app.project.geometry.openings)+1}"
-            if any(b.barrier_id == label for b in self.app.project.barriers):
+            label = local["label"].get().strip() or next_label(local["kind"].get())
+            if label in existing_ids:
                 messagebox.showerror("Opening", f"Barrier/opening ID {label!r} is already in use.", parent=win)
                 return
+            kind = local["kind"].get()
+            type_spec = get_barrier_default(room_type, kind)
             op = Opening(
                 wall=wall,
-                opening_type=local["kind"].get(),
+                opening_type=kind,
                 offset_m=offset,
                 width_m=width,
                 label=label,
                 material=local["material"].get().strip(),
                 pb_equiv_mm=pb,
+                sill_height_above_ffl_m=sill,
+                head_height_above_ffl_m=head,
+                kvp_basis=type_spec.get("kvp_basis") if kind == "viewing_panel" else None,
                 id=label,
             )
             self.wall_var.set(wall)
-            self.kind_var.set(local["kind"].get())
+            self.kind_var.set(kind)
             self.offset_var.set(local["offset"].get())
             self.width_var.set(local["width"].get())
             self.label_var.set(label)
@@ -789,19 +930,18 @@ class FloorPlanTab(ttk.Frame):
             self.selected_measurement_id = None
 
         risk = {}
-        material = {}
         for b in self.app.project.barriers:
             state = b.risk_state()
             if state:
                 risk[b.barrier_id] = state
-            construction = b.observed_construction.strip() or b.expected_construction.strip()
-            if construction:
-                material[b.barrier_id] = construction
+        # Only a recorded field observation may be shown as actual shielding.
+        # The RadShield design is a separate reference, never an as-built fallback.
+        as_built_labels, design_labels = floor_plan_wall_pb_labels(self.app.project.barriers)
         g.barrier_risk_map = risk
-        g.wall_material_labels = material
+        g.wall_material_labels = design_labels
         g.wall_p_values = {}
         g.wall_distance_values = {}
-        g.wall_role_labels = {}
+        g.wall_role_labels = as_built_labels
         g.barrier_dose_label_map = {}
         self.canvas.draw_room(
             g,
