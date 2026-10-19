@@ -137,3 +137,16 @@ Each saved project also contains a draft `radstatus_payload`, and the File menu 
 - **Manual gates** remain NOT RUN until a human conducts the field laptop, offline, evidence, asymmetric geometry, RadShield interop, report legibility, backup/security and professional review checks.
 - **No automatic field release approval:** automated PASS never authorises a regulatory/compliance certificate, and this prototype has no periodic autosave or standalone installer.
 - Full procedures and the sign-off template: `docs/deployment/RADVERIFY_V04_FIELD_DEPLOYMENT_READINESS.md`.
+
+### Floor Plan room dimensions (field GUI refinement)
+
+The **2 Floor Plan** tab now exposes the same three editable room dimensions as
+**1 Room Details**, using RadShield-style **− / value / +** controls:
+Length S–N, Width W–E and Height, in metres. Use **Enter** or move focus away
+to commit typed values; **+ / −** nudges in **0.1 m** steps (minimum 0.5 m).
+Room Details and Floor Plan share the canonical `RoomGeometry` object, so edits
+redraw immediately and persist to native `.radverify.json`, `.radtwin.json`,
+reports and field packages. Reducing room dimensions is rejected if an existing
+opening or measurement point would end up outside the room (including height); reducing a dimension
+may move the scanner/source centre inside the resized room, with a status
+message. The Floor Plan sidebar scrolls on smaller field laptops.

@@ -183,7 +183,7 @@ def test_default_folder_never_overwrites_and_cli_restores(tmp_path):
     second = default_restore_folder(source, tmp_path)
     assert second.name == "field_package_restored_2"
     result = subprocess.run([sys.executable, "-m", "radverify.packaging", str(source),
-                             "--restore-to", str(second)], capture_output=True, text=True)
+                             "--restore-to", str(second)], stdin=subprocess.DEVNULL, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert "RESTORED:" in result.stdout
     assert (second / "project/room.radverify.json").is_file()

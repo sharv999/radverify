@@ -144,6 +144,7 @@ class RadVerifyApp(tk.Tk):
         self._loading = True
         try:
             self.room_tab.load()
+            self.floor_tab.load_dimensions()
             self.floor_tab.reset_selection()
             self.floor_tab.refresh_openings()
             self.barrier_tab.refresh()

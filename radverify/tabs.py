@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import math
 from datetime import datetime
 from pathlib import Path
 import subprocess
@@ -11,6 +12,7 @@ from typing import Callable
 
 from geometry.geometry_canvas import GeometryCanvas, DESIGN_FIELD_WIDTH_M, DESIGN_FIELD_HEIGHT_M, CANVAS_MARGIN_PX
 from geometry.geometry_model import Opening
+from config.geometry_constants import MIN_ROOM_DIMENSION_M
 from config.ui_constants import COLOUR_PASS, COLOUR_REVIEW_DARK, COLOUR_FAIL, COLOUR_TEXT
 from radverify.models import RadVerifyProject, BarrierInspection, EvidenceItem, MeasurementPoint, MeasurementRecord, STATUS_OPTIONS
 
@@ -81,12 +83,16 @@ class RoomDetailsTab(ttk.Frame):
     def load(self):
         d = self.app.project.details
         for key, var in self.vars.items():
-            if key in {"length_m", "width_m", "height_m"}:
-                var.set(f"{getattr(self.app.project.geometry, key):g}")
-            else:
+            if key not in {"length_m", "width_m", "height_m"}:
                 var.set(str(getattr(d, key)))
+        self.load_dimensions()
         self.notes.delete("1.0", "end")
         self.notes.insert("1.0", d.notes)
+
+    def load_dimensions(self):
+        """Sync room detail fields from the canonical shared geometry."""
+        for key in ("length_m", "width_m", "height_m"):
+            self.vars[key].set(f"{getattr(self.app.project.geometry, key):g}")
 
     def apply_to_model(self):
         if getattr(self.app, "_loading", False):
@@ -97,15 +103,27 @@ class RoomDetailsTab(ttk.Frame):
                 continue
             setattr(d, key, str(var.get()))
         d.notes = self.notes.get("1.0", "end-1c") if hasattr(self, "notes") else d.notes
-        try:
-            for key in ("length_m", "width_m", "height_m"):
+        g = self.app.project.geometry
+        for key in ("length_m", "width_m", "height_m"):
+            try:
                 value = float(self.vars[key].get())
-                if value > 0:
-                    setattr(self.app.project.geometry, key, value)
-            self.app.project.geometry.room_name = d.room_name or "Imaging Room"
-            self.app.project.geometry.clamp_source_inside_room()
-        except (ValueError, tk.TclError):
-            pass
+                if not math.isfinite(value) or value < MIN_ROOM_DIMENSION_M:
+                    raise ValueError
+            except (ValueError, tk.TclError):
+                self.vars[key].set(f"{getattr(g, key):g}")
+                self.app.set_status(f"Invalid {key.replace('_m', '')}: enter at least {MIN_ROOM_DIMENSION_M:g} m.")
+                continue
+            if hasattr(self.app, "floor_tab"):
+                issue = self.app.floor_tab._dimension_conflict(key, value)
+                if issue:
+                    self.vars[key].set(f"{getattr(g, key):g}")
+                    self.app.set_status(f"Room dimensions unchanged: {issue}")
+                    continue
+            setattr(g, key, value)
+        g.room_name = d.room_name or "Imaging Room"
+        g.clamp_source_inside_room()
+        if hasattr(self.app, "floor_tab"):
+            self.app.floor_tab.load_dimensions()
         self.app.mark_dirty()
         self.app.refresh_visuals()
 
@@ -128,15 +146,31 @@ class FloorPlanTab(ttk.Frame):
         self._placement_armed = False
         self.selected_barrier_id: str | None = None
         self.selected_measurement_id: str | None = None
+        self.dimension_vars: dict[str, tk.StringVar] = {}
         self._build()
 
     def _build(self):
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
 
-        controls = ttk.Frame(self, padding=12, width=320)
-        controls.grid(row=0, column=0, sticky="ns")
-        controls.grid_propagate(False)
+        # The sidebar is scrollable, as in RadShield, so all controls remain
+        # reachable on smaller field-laptop displays and at 125–150% scaling.
+        left_shell = ttk.Frame(self)
+        left_shell.grid(row=0, column=0, sticky="ns")
+        left_shell.rowconfigure(0, weight=1)
+        left_canvas = tk.Canvas(left_shell, width=315, highlightthickness=0, borderwidth=0)
+        left_canvas.grid(row=0, column=0, sticky="ns")
+        left_scrollbar = ttk.Scrollbar(left_shell, orient="vertical", command=left_canvas.yview)
+        left_scrollbar.grid(row=0, column=1, sticky="ns")
+        left_canvas.configure(yscrollcommand=left_scrollbar.set)
+        controls = ttk.Frame(left_canvas, padding=12)
+        controls_id = left_canvas.create_window((0, 0), window=controls, anchor="nw")
+        controls.bind("<Configure>", lambda _e: left_canvas.configure(scrollregion=left_canvas.bbox("all")))
+        left_canvas.bind("<Configure>", lambda e: left_canvas.itemconfigure(controls_id, width=e.width))
+        def _on_mousewheel(event):
+            left_canvas.yview_scroll(int(-event.delta / 120), "units")
+        left_canvas.bind("<Enter>", lambda _e: left_canvas.bind_all("<MouseWheel>", _on_mousewheel))
+        left_canvas.bind("<Leave>", lambda _e: left_canvas.unbind_all("<MouseWheel>"))
         controls.columnconfigure(0, weight=1)
         controls.columnconfigure(1, weight=1)
 
@@ -164,6 +198,33 @@ class FloorPlanTab(ttk.Frame):
             justify="left",
             wraplength=290,
         ).grid(row=row, column=0, columnspan=2, sticky="w", pady=(0, 10))
+        row += 1
+
+        # Match RadShield's direct entry and 0.1 m nudge controls while using
+        # the same geometry object that is saved in native and Digital Twin JSON.
+        dimensions = ttk.LabelFrame(controls, text="Room geometry (m)", padding=8)
+        dimensions.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(0, 8))
+        dimensions.columnconfigure(1, weight=1)
+        for drow, (label, key) in enumerate((
+            ("Length S–N", "length_m"),
+            ("Width W–E", "width_m"),
+            ("Height", "height_m"),
+        )):
+            ttk.Label(dimensions, text=label).grid(row=drow, column=0, sticky="w", pady=2, padx=(0, 7))
+            var = tk.StringVar(value=f"{getattr(self.app.project.geometry, key):g}")
+            self.dimension_vars[key] = var
+            ttk.Button(dimensions, text="−", width=3,
+                       command=lambda k=key: self.nudge_dimension(k, -0.1)).grid(
+                row=drow, column=1, sticky="e", padx=(0, 3), pady=2
+            )
+            entry = ttk.Entry(dimensions, textvariable=var, width=8, justify="right")
+            entry.grid(row=drow, column=2, sticky="ew", pady=2)
+            entry.bind("<Return>", lambda _e, k=key: self.commit_dimension(k))
+            entry.bind("<FocusOut>", lambda _e, k=key: self.commit_dimension(k))
+            ttk.Button(dimensions, text="+", width=3,
+                       command=lambda k=key: self.nudge_dimension(k, 0.1)).grid(
+                row=drow, column=3, sticky="w", padx=(3, 0), pady=2
+            )
         row += 1
 
         workflow = ttk.LabelFrame(controls, text="Field workflow", padding=8)
@@ -269,6 +330,78 @@ class FloorPlanTab(ttk.Frame):
         row += 1
 
         self._update_selected_controls()
+
+    def load_dimensions(self):
+        """Keep the Floor Plan editors in sync with Room Details and file imports."""
+        for key, var in self.dimension_vars.items():
+            var.set(f"{getattr(self.app.project.geometry, key):g}")
+
+    def _dimension_conflict(self, key: str, value: float) -> str | None:
+        """Do not strand surveyed points/openings outside the edited room footprint."""
+        g = self.app.project.geometry
+        if key == "height_m":
+            for point in self.app.project.measurements:
+                if point.height_m > value + 1e-8:
+                    return f"{point.point_id} measurement height lies above the proposed ceiling."
+            for opening in g.openings:
+                if opening.head_height_above_ffl_m > value + 1e-8:
+                    return f"Opening {opening.id or opening.label or opening.wall} exceeds the proposed ceiling height."
+            return None
+        axis = "x_m" if key == "width_m" else "y_m"
+        for point in self.app.project.measurements:
+            if getattr(point, axis) > value + 1e-8:
+                return f"{point.point_id} lies outside the proposed room boundary."
+        wall_set = {"N", "S"} if key == "width_m" else {"E", "W"}
+        for opening in g.openings:
+            # offset_m denotes the *centre* of an opening, not its near edge.
+            if opening.wall in wall_set and opening.offset_m + opening.width_m / 2 > value + 1e-8:
+                return f"Opening {opening.id or opening.label or opening.wall} would extend beyond its wall."
+        return None
+
+    def commit_dimension(self, key: str):
+        """Commit a typed dimension on Return/focus loss, preserving existing records."""
+        if getattr(self.app, "_loading", False) or key not in self.dimension_vars:
+            return False
+        g = self.app.project.geometry
+        text = self.dimension_vars[key].get().strip()
+        try:
+            value = float(text)
+            if not math.isfinite(value) or value < MIN_ROOM_DIMENSION_M:
+                raise ValueError
+        except ValueError:
+            self.dimension_vars[key].set(f"{getattr(g, key):g}")
+            self.app.set_status(f"Invalid {key.replace('_m', '')}: enter a finite value of at least {MIN_ROOM_DIMENSION_M:g} m.")
+            return False
+        issue = self._dimension_conflict(key, value)
+        if issue:
+            self.dimension_vars[key].set(f"{getattr(g, key):g}")
+            self.app.set_status(f"Room dimensions unchanged: {issue}")
+            return False
+        previous = getattr(g, key)
+        if abs(value - previous) < 1e-9:
+            self.dimension_vars[key].set(f"{previous:g}")
+            return True
+        old_source = (g.source.x_m, g.source.y_m)
+        setattr(g, key, value)
+        g.clamp_source_inside_room()
+        self.load_dimensions()
+        self.app.room_tab.load_dimensions()
+        self.app.mark_dirty()
+        self.app.refresh_visuals()
+        msg = f"Room {key.replace('_m', '')}: {value:g} m"
+        if (g.source.x_m, g.source.y_m) != old_source:
+            msg += " (source moved inside resized room)"
+        self.app.set_status(msg)
+        return True
+
+    def nudge_dimension(self, key: str, delta_m: float):
+        """RadShield-style +/- 0.1 m nudge, using the canonical model."""
+        if key not in self.dimension_vars:
+            return False
+        current = getattr(self.app.project.geometry, key)
+        value = round(max(MIN_ROOM_DIMENSION_M, current + delta_m), 3)
+        self.dimension_vars[key].set(f"{value:g}")
+        return self.commit_dimension(key)
 
     # ------------------------------------------------------------------
     # Selection / workflow state
