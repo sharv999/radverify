@@ -23,3 +23,8 @@ build/
 # Logs
 *.log
 *.patch
+
+# Local field-check output and project-specific environment
+.venv/
+.pytest_cache/
+field_audits/

@@ -6,8 +6,12 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
 from radverify.models import RadVerifyProject
+from radverify.safe_io import atomic_write_json, read_native_project
 from radverify.reporting import build_verification_pdf
-from radverify.packaging import build_field_package, resolve_evidence_paths
+from radverify.packaging import (
+    FieldPackageError, build_field_package, default_restore_folder,
+    project_json_for_save, resolve_evidence_paths, restore_field_package,
+)
 from radverify.radtwin import (
     RADTWIN_EXTENSION,
     project_from_radtwin,
@@ -17,7 +21,7 @@ from radverify.tabs import RoomDetailsTab, FloorPlanTab, BarrierInspectionTab, M
 
 
 APP_NAME = "RadVerify"
-APP_VERSION = "0.4 Step 2 portable field evidence prototype"
+APP_VERSION = "0.4 Step 4 field deployment readiness audit"
 PROJECT_EXTENSION = ".radverify.json"
 
 
@@ -59,6 +63,7 @@ class RadVerifyApp(tk.Tk):
         ttk.Button(topbar, text="Quit", command=self.on_close).pack(side="right")
         ttk.Button(topbar, text="Export verification PDF…", command=self.export_verification_pdf).pack(side="right", padx=(0, 8))
         ttk.Button(topbar, text="Export field package ZIP…", command=self.export_field_package).pack(side="right", padx=(0, 8))
+        ttk.Button(topbar, text="Import field package ZIP…", command=self.import_field_package).pack(side="right", padx=(0, 8))
 
         self.notebook = ttk.Notebook(shell)
         self.notebook.pack(fill="both", expand=True, padx=8, pady=(4, 0))
@@ -91,10 +96,13 @@ class RadVerifyApp(tk.Tk):
         file_menu.add_command(label="Export RadStatus payload…", command=self.export_radstatus_payload)
         file_menu.add_command(label="Export draft verification report (PDF)…", command=self.export_verification_pdf)
         file_menu.add_command(label="Export portable field package (ZIP)…", command=self.export_field_package)
+        file_menu.add_command(label="Import / restore field package (ZIP)…", command=self.import_field_package)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_close)
         menu.add_cascade(label="File", menu=file_menu)
         help_menu = tk.Menu(menu, tearoff=False)
+        help_menu.add_command(label="Export field readiness audit…", command=self.export_readiness_audit)
+        help_menu.add_separator()
         help_menu.add_command(label="About", command=lambda: messagebox.showinfo("RadVerify", f"{APP_NAME}\n{APP_VERSION}\n\nField verification prototype derived from the RadShield room/floor-plan GUI."))
         menu.add_cascade(label="Help", menu=help_menu)
         self.config(menu=menu)
@@ -172,12 +180,11 @@ class RadVerifyApp(tk.Tk):
         if not filename:
             return
         try:
-            data = json.loads(Path(filename).read_text(encoding="utf-8"))
-            self.project = RadVerifyProject.from_dict(data)
-            resolve_evidence_paths(self.project, Path(filename).parent)
+            loaded = read_native_project(filename)
         except Exception as exc:
             messagebox.showerror("Open project", f"Could not open project:\n{exc}")
             return
+        self.project = loaded
         self.current_file = Path(filename)
         self._dirty = False
         self.load_project_into_ui()
@@ -192,16 +199,16 @@ class RadVerifyApp(tk.Tk):
         filename = filedialog.asksaveasfilename(title="Save RadVerify project", defaultextension=PROJECT_EXTENSION, filetypes=(("RadVerify JSON", "*.radverify.json"), ("JSON", "*.json")))
         if not filename:
             return False
-        self.current_file = Path(filename)
-        return self._write_project(self.current_file)
+        return self._write_project(Path(filename))
 
     def _write_project(self, path: Path):
-        self.room_tab.apply_to_model()
         try:
-            path.write_text(json.dumps(self.project.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8")
+            self.room_tab.apply_to_model()
+            atomic_write_json(path, project_json_for_save(self.project, path))
         except Exception as exc:
             messagebox.showerror("Save project", f"Could not save project:\n{exc}")
             return False
+        self.current_file = path
         self._dirty = False
         self._update_title()
         self.set_status(f"Saved {path.name}")
@@ -219,14 +226,15 @@ class RadVerifyApp(tk.Tk):
             return
         try:
             data = json.loads(Path(filename).read_text(encoding="utf-8"))
-            self.project = project_from_radtwin(data)
-            resolve_evidence_paths(self.project, Path(filename).parent)
+            imported = project_from_radtwin(data)
+            resolve_evidence_paths(imported, Path(filename).parent)
         except Exception as exc:
             messagebox.showerror("Import digital twin", f"Could not import Radiation Room Digital Twin:\n{exc}")
             return
         # A twin is an interchange record rather than a native RadVerify project.
         # Import it into a new unsaved working project so the original twin is not
         # silently overwritten by File > Save.
+        self.project = imported
         self.current_file = None
         self._dirty = True
         self.load_project_into_ui()
@@ -246,10 +254,7 @@ class RadVerifyApp(tk.Tk):
         if not filename:
             return
         try:
-            Path(filename).write_text(
-                json.dumps(project_to_radtwin(self.project), indent=2, ensure_ascii=False),
-                encoding="utf-8",
-            )
+            atomic_write_json(filename, project_to_radtwin(self.project))
         except Exception as exc:
             messagebox.showerror("Export digital twin", f"Could not export Radiation Room Digital Twin:\n{exc}")
             return
@@ -260,7 +265,7 @@ class RadVerifyApp(tk.Tk):
         if not filename:
             return
         try:
-            Path(filename).write_text(json.dumps(self.project.to_radstatus_payload(), indent=2, ensure_ascii=False), encoding="utf-8")
+            atomic_write_json(filename, self.project.to_radstatus_payload())
         except Exception as exc:
             messagebox.showerror("Export", f"Could not export RadStatus payload:\n{exc}")
             return
@@ -303,6 +308,64 @@ class RadVerifyApp(tk.Tk):
             messagebox.showerror("Export field package", f"Could not package field record:\n{exc}")
             return
         self.set_status(f"Exported portable field package: {Path(filename).name}")
+
+    def import_field_package(self):
+        """Restore to an isolated folder, then open only after integrity checks pass."""
+        if not self._confirm_discard():
+            return
+        archive = filedialog.askopenfilename(
+            title="Select portable RadVerify field package",
+            filetypes=(("RadVerify field package", "*.zip"),),
+        )
+        if not archive:
+            return
+        parent = filedialog.askdirectory(title="Choose a folder to contain the restored project")
+        if not parent:
+            return
+        destination = default_restore_folder(archive, parent)
+        try:
+            restored_path = restore_field_package(archive, destination)
+            data = json.loads(restored_path.read_text(encoding="utf-8"))
+            project = RadVerifyProject.from_dict(data)
+            resolve_evidence_paths(project, restored_path.parent)
+        except Exception as exc:
+            messagebox.showerror("Restore field package", f"Field package could not be restored:\n{exc}")
+            return
+        self.project = project
+        self.current_file = restored_path
+        self._dirty = False
+        self.load_project_into_ui()
+        self.set_status(f"Restored verified field package: {restored_path} — unsigned SHA-256 integrity")
+        messagebox.showinfo(
+            "Field package restored",
+            f"Project and evidence restored to:\n{destination}\n\n"
+            "SHA-256 integrity verified. This does not authenticate the package's author.",
+        )
+
+    def export_readiness_audit(self):
+        """Run independent synthetic preflight; never mark field release approved."""
+        filename = filedialog.asksaveasfilename(
+            title="Export V0.4 field readiness audit and manual checklist",
+            defaultextension=".md",
+            initialfile="RadVerify_V0.4_field_readiness_audit.md",
+            filetypes=(("Markdown checklist", "*.md"),),
+        )
+        if not filename:
+            return
+        try:
+            from radverify.deployment import run_field_readiness_audit, write_audit_files
+            result = run_field_readiness_audit()
+            report, inventory = write_audit_files(result, filename)
+        except Exception as exc:
+            messagebox.showerror("Field readiness audit", f"Audit could not complete:\n{exc}")
+            return
+        self.set_status(f"Field readiness audit: {result['automated_result']} — manual site checks outstanding")
+        messagebox.showinfo(
+            "Field readiness audit",
+            f"Automated: {result['automated_pass']}/{result['automated_total']} {result['automated_result']}\n"
+            f"Manual field acceptance: NOT CLEARED\n\n"
+            f"Checklist: {report}\nMachine record: {inventory}",
+        )
 
     def on_close(self):
         if self._confirm_discard():

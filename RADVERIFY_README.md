@@ -118,3 +118,22 @@ Each saved project also contains a draft `radstatus_payload`, and the File menu 
 - Export is atomic: an unsuccessful build leaves any existing destination ZIP untouched.
 - **Important:** Checksums are for transport integrity, not tamperproof provenance or authentication; a malicious actor can replace both the contents and the unsigned manifest. The ZIP and report are **not compliance certification**.
 - To use the exported archive: extract it completely, then open `project/room.radverify.json` in RadVerify; do not open the JSON directly inside the ZIP.
+
+## V0.4 Step 3 — Portable field package import and restoration
+
+- **Import field package ZIP…** on the toolbar and File menu verifies a Step 2 archive, asks for a destination *parent folder*, and creates a **new** `*_restored` directory. It never overwrites an existing record.
+- The integrity gate validates SHA-256 hashes, inventory, required project/twin/report files, evidence paths, the evidence index and Windows-safe ZIP paths. It refuses modified, truncated or unsafe archives. Extraction is staged into a temporary directory and completed only after verification; failures remove the staging directory.
+- On successful import the restored native project opens in RadVerify, with evidence links resolved to files inside the restored folder. The saved project and twin JSON retain portable relative links, allowing the directory to be moved.
+- **Restore via terminal**: `python -m radverify.packaging "C:\\path\\to\\survey.zip" --restore-to "C:\\path\\to\\new_survey_folder"` (the destination directory must not already exist). The existing command without `--restore-to` continues to verify without extraction.
+- SHA-256 and the unsigned manifest detect accidental damage and uncoordinated modification, **not malicious replacement of the archive and its manifest**. Check the sender/provenance separately. The report remains a DRAFT, not certification.
+- The manifest describes the **original exported snapshot**. After editing or saving a restored project, re-export a new field package to generate a current report and SHA-256 manifest. Do not treat the original manifest as a signature of subsequent changes.
+
+## V0.4 Step 4 — Field deployment readiness audit
+
+- **Help → Export field readiness audit…** generates a Markdown checklist and machine-readable JSON record. This audit uses synthetic data, never an open user project.
+- `python -m radverify.deployment --output field_audits/radverify_field_readiness_audit.md` runs eight automated preflight gates and writes the same two files. The `RUN_FIELD_READINESS_AUDIT.bat` helper creates the output folder automatically.
+- The gates check runtime import/Tcl, native JSON save/load, the design/as-built twin round trip, portable export/verify/repeat restore, and rejection of corrupt/unsupported files.
+- **Safer persistence**: native project saves (and plain JSON exports) use an atomic sibling-file replacement so interrupted writes do not truncate an existing file; failed Save As no longer changes the active filename; failed project/twin imports do not replace in-memory data.
+- **Manual gates** remain NOT RUN until a human conducts the field laptop, offline, evidence, asymmetric geometry, RadShield interop, report legibility, backup/security and professional review checks.
+- **No automatic field release approval:** automated PASS never authorises a regulatory/compliance certificate, and this prototype has no periodic autosave or standalone installer.
+- Full procedures and the sign-off template: `docs/deployment/RADVERIFY_V04_FIELD_DEPLOYMENT_READINESS.md`.

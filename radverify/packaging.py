@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import shutil
 from pathlib import Path, PurePosixPath
 import re
 import tempfile
@@ -308,13 +309,225 @@ def verify_field_package(path: str | Path) -> dict[str, Any]:
         }
 
 
+def project_json_for_save(project: RadVerifyProject, path: str | Path) -> dict[str, Any]:
+    """Keep package-managed evidence links relative after a restored project is saved.
+
+    Other ordinary project/evidence links retain their existing behaviour.
+    Newly attached *external* files remain external until the next ZIP export.
+    """
+    document = project.to_dict()
+    project_path = Path(path).resolve()
+    if project_path.parent.name != "project":
+        return document
+    package_root = project_path.parent.parent
+    if not (package_root / MANIFEST_NAME).is_file():
+        return document
+    evidence_root = (package_root / "evidence").resolve()
+
+    def update(node: Any) -> None:
+        if isinstance(node, dict):
+            value = node.get("file_path")
+            if isinstance(value, str) and value:
+                actual = Path(value)
+                if actual.is_absolute():
+                    try:
+                        rel = actual.resolve().relative_to(evidence_root)
+                    except ValueError:
+                        pass
+                    else:
+                        node["file_path"] = "../evidence/" + rel.as_posix()
+            for child in node.values():
+                update(child)
+        elif isinstance(node, list):
+            for child in node:
+                update(child)
+
+    update(document)
+    return document
+
+
+def _validate_restorable_member_names(names: list[str]) -> None:
+    """Reject ZIP paths that could collide or escape on Windows filesystems."""
+    reserved = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)),
+                *(f"LPT{i}" for i in range(1, 10))}
+    normalised: set[str] = set()
+    for name in names:
+        if not _safe_member_name(name) or PurePosixPath(name).as_posix() != name:
+            raise FieldPackageError(f"Unsafe archive member: {name!r}")
+        components = name.split("/")
+        if any(not component or component in (".", "..")
+               or component.endswith((".", " "))
+               or component.split(".")[0].upper() in reserved
+               or any(ord(char) < 32 for char in component)
+               for component in components):
+            raise FieldPackageError(f"Unsafe Windows archive member: {name!r}")
+        key = name.casefold()
+        if key in normalised:
+            raise FieldPackageError(f"Case-insensitive filename collision: {name!r}")
+        normalised.add(key)
+
+
+def _validate_restoration_documents(archive: ZipFile, manifest: dict[str, Any]) -> None:
+    """Require known documents and strictly contained, recorded evidence links."""
+    documents = manifest.get("documents")
+    expected = {"project": _PROJECT_MEMBER, "digital_twin": _TWIN_MEMBER,
+                "draft_report": _REPORT_MEMBER}
+    if not isinstance(documents, dict) or any(documents.get(k) != v for k, v in expected.items()):
+        raise FieldPackageError("Package does not declare expected RadVerify documents")
+
+    entries = {row["path"]: row for row in manifest["files"]}
+    for member in (*expected.values(), README_NAME):
+        if member not in entries:
+            raise FieldPackageError(f"Missing required file: {member}")
+
+    try:
+        native = json.loads(archive.read(_PROJECT_MEMBER))
+        twin = json.loads(archive.read(_TWIN_MEMBER))
+    except (UnicodeError, ValueError) as exc:
+        raise FieldPackageError("Invalid project or Digital Twin JSON") from exc
+    if not isinstance(native, dict) or native.get("schema_version") != "radverify-0.1":
+        raise FieldPackageError("Unsupported native RadVerify project schema")
+    if not isinstance(twin, dict) or twin.get("schema") != "radiation-room-digital-twin-0.1":
+        raise FieldPackageError("Unsupported Radiation Room Digital Twin schema")
+    if not archive.read(_REPORT_MEMBER).startswith(b"%PDF"):
+        raise FieldPackageError("Draft verification report is not a PDF")
+
+    index = manifest.get("evidence_index")
+    if not isinstance(index, list):
+        raise FieldPackageError("Missing evidence index")
+    indexed: set[tuple[str, str]] = set()
+    for item in index:
+        if not isinstance(item, dict):
+            raise FieldPackageError("Invalid evidence index entry")
+        path = item.get("path")
+        if path is None:
+            if item.get("status") != "Reference only":
+                raise FieldPackageError("Inconsistent reference-only evidence")
+            continue
+        if not isinstance(path, str) or not path.startswith("evidence/") or path not in entries:
+            raise FieldPackageError("Evidence index references an absent file")
+        if item.get("sha256") != entries[path]["sha256"] or item.get("status") != "Included":
+            raise FieldPackageError("Evidence index hash/status mismatch")
+        indexed.add((path, item["sha256"]))
+
+    def walk(node: Any, member: str):
+        if isinstance(node, dict):
+            if "file_path" in node:
+                path = node["file_path"]
+                if path:
+                    if not isinstance(path, str) or not path.startswith("../evidence/"):
+                        raise FieldPackageError(f"Unsafe evidence link in {member}")
+                    # Both JSON files live one level below the archive root.
+                    linked = path[3:]
+                    if (path != "../" + linked or not _safe_member_name(linked)
+                            or linked not in entries or (linked, node.get("sha256")) not in indexed):
+                        raise FieldPackageError(f"Unlisted or changed evidence link in {member}")
+                    linked_files[member].add(linked)
+                elif not isinstance(path, str):
+                    raise FieldPackageError(f"Invalid evidence file path in {member}")
+            for child in node.values():
+                walk(child, member)
+        elif isinstance(node, list):
+            for child in node:
+                walk(child, member)
+
+    linked_files = {_PROJECT_MEMBER: set(), _TWIN_MEMBER: set()}
+    walk(native, _PROJECT_MEMBER)
+    walk(twin, _TWIN_MEMBER)
+    indexed_files = {path for path, _digest in indexed}
+    if linked_files[_PROJECT_MEMBER] != indexed_files or linked_files[_TWIN_MEMBER] != indexed_files:
+        raise FieldPackageError("Native project, Digital Twin and evidence index disagree")
+
+
+def restore_field_package(package: str | Path, destination: str | Path) -> Path:
+    """Verify then restore to a *new* directory. Return the native project path.
+
+    Rejects modified, incomplete or unsafe packages. Never extracts into an
+    existing directory or changes the active application project on failure.
+    An unsigned manifest establishes transport integrity, not authorship.
+    """
+    archive_path = Path(package)
+    target = Path(destination)
+    if target.exists() or target.is_symlink():
+        raise FieldPackageError(f"Restoration destination already exists: {target}")
+    if not target.parent.is_dir():
+        raise FieldPackageError(f"Choose an existing destination parent folder: {target.parent}")
+
+    verify_field_package(archive_path)
+    stage: Path | None = None
+    try:
+        with ZipFile(archive_path, "r") as archive:
+            names = archive.namelist()
+            _validate_restorable_member_names(names)
+            manifest = json.loads(archive.read(MANIFEST_NAME))
+            _validate_restoration_documents(archive, manifest)
+            inventory = {row["path"]: row for row in manifest["files"]}
+
+            stage = Path(tempfile.mkdtemp(prefix=".radverify-restore-", dir=target.parent))
+            for name in names:
+                # Do not call extractall: write to paths that passed our checks.
+                dest_file = stage.joinpath(*name.split("/"))
+                dest_file.parent.mkdir(parents=True, exist_ok=True)
+                expected = inventory.get(name)
+                digest = hashlib.sha256()
+                size = 0
+                with archive.open(name, "r") as source, dest_file.open("xb") as output:
+                    for chunk in iter(lambda: source.read(_CHUNK), b""):
+                        size += len(chunk)
+                        if expected and size > expected["size"]:
+                            raise FieldPackageError(f"ZIP member exceeds declared size: {name}")
+                        digest.update(chunk)
+                        output.write(chunk)
+                if expected and (size != expected["size"] or digest.hexdigest() != expected["sha256"]):
+                    raise FieldPackageError(f"File changed during restoration: {name}")
+
+            # Make sure the extracted project is actually readable by RadVerify.
+            project_path = stage / _PROJECT_MEMBER
+            from radverify.models import RadVerifyProject
+            restored = RadVerifyProject.from_dict(json.loads(project_path.read_text(encoding="utf-8")))
+            resolve_evidence_paths(restored, project_path.parent)
+            for barrier, evidence in _walk_evidence(restored):
+                if evidence.file_path and evidence.integrity_status() != "Verified":
+                    raise FieldPackageError(f"Restored evidence failed integrity check: {barrier.barrier_id} / {evidence.evidence_id}")
+
+        if target.exists() or target.is_symlink():
+            raise FieldPackageError(f"Restoration destination appeared during extraction: {target}")
+        stage.rename(target)
+        stage = None
+        return target / _PROJECT_MEMBER
+    except FieldPackageError:
+        raise
+    except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
+        raise FieldPackageError(f"Unable to restore field package: {exc}") from exc
+    finally:
+        if stage is not None:
+            shutil.rmtree(stage, ignore_errors=True)
+
+
+def default_restore_folder(package: str | Path, parent: str | Path) -> Path:
+    """Suggest a new destination folder; never choose an existing one."""
+    basename = _safe_filename(Path(package).stem)
+    base = Path(parent) / f"{basename}_restored"
+    if not base.exists():
+        return base
+    n = 2
+    while (candidate := Path(f"{base}_{n}")).exists():
+        n += 1
+    return candidate
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Check integrity of a RadVerify field-record ZIP")
     parser.add_argument("zip_path", help="Path to a RadVerify field package ZIP")
+    parser.add_argument("--restore-to", metavar="NEW_FOLDER", help="Verify and restore into a new (non-existing) folder")
     args = parser.parse_args()
     try:
-        result = verify_field_package(args.zip_path)
+        if args.restore_to:
+            project_path = restore_field_package(args.zip_path, args.restore_to)
+            print(f"RESTORED: {project_path} (unsigned integrity check)")
+        else:
+            result = verify_field_package(args.zip_path)
+            print(f"VALID: {result['files']} files, {result['evidence_items']} evidence links (unsigned integrity check)")
     except (FieldPackageError, OSError) as exc:
         parser.exit(1, f"FAIL: {exc}\n")
-    print(f"VALID: {result['files']} files, {result['evidence_items']} evidence links (unsigned integrity check)")
